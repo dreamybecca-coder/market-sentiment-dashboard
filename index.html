@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>市场情绪监控看板</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --border: #e5e5e1;
+    --text-1: #1a1a18; --text-2: #55534e; --text-3: #8a877f; --text-4: #b3b0a6;
+    --positive: #16a34a; --warning: #d97706; --danger: #dc2626; --accent: #4f6ef7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141412; --surface: #1d1d1a; --border: #32322d;
+      --text-1: #eceae4; --text-2: #b8b5ac; --text-3: #8a877f; --text-4: #6b6960;
+      --positive: #34d17b; --warning: #f5a623; --danger: #f4655f; --accent: #7b93ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "SF Pro", "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text-1);
+    font-size: 14px; line-height: 1.55; letter-spacing: 0;
+  }
+  .page { max-width: 1240px; margin: 0 auto; padding: 20px 24px 48px; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+  header.page-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  header.page-head h1 { font-size: 20px; font-weight: 600; margin: 0; }
+  header.page-head .asof { font-size: 12.5px; color: var(--text-3); }
+
+  .section-title {
+    font-size: 12.5px; color: var(--text-3); letter-spacing: .02em;
+    margin: 26px 0 10px; display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after { content: ""; flex: 1; border-top: 1px solid var(--border); }
+
+  /* ---------- P0 状态灯 ---------- */
+  .hero { display: flex; align-items: center; gap: 18px; margin-top: 12px; flex-wrap: wrap; }
+  .light-wrap { flex: none; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .light { width: 52px; height: 52px; border-radius: 50%; background: var(--border); }
+  .light.lv-green { background: var(--positive); box-shadow: 0 0 18px color-mix(in srgb, var(--positive) 50%, transparent); }
+  .light.lv-yellow { background: var(--warning); box-shadow: 0 0 18px color-mix(in srgb, var(--warning) 50%, transparent); }
+  .light.lv-red { background: var(--danger); box-shadow: 0 0 18px color-mix(in srgb, var(--danger) 50%, transparent); }
+  .light-label { font-size: 12.5px; font-weight: 600; }
+  .light-label.lv-green { color: var(--positive); }
+  .light-label.lv-yellow { color: var(--warning); }
+  .light-label.lv-red { color: var(--danger); }
+  .hero-main { flex: 1 1 280px; min-width: 220px; }
+  .headline { font-size: 17px; font-weight: 600; margin: 0 0 8px; }
+  .meta-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--text-2);
+    border: 1px solid var(--border); border-radius: 999px; padding: 3px 11px;
+    background: var(--surface); font-variant-numeric: tabular-nums;
+  }
+  .chip b { font-weight: 600; color: var(--text-1); }
+
+  .alerts { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .alert { display: flex; gap: 10px; align-items: baseline; font-size: 13px; padding: 8px 12px; border-radius: 8px; border-left: 3px solid transparent; }
+  .alert.lv-red { background: color-mix(in srgb, var(--danger) 9%, transparent); border-left-color: var(--danger); }
+  .alert.lv-yellow { background: color-mix(in srgb, var(--warning) 10%, transparent); border-left-color: var(--warning); }
+  .alert .act { font-size: 11.5px; color: var(--text-3); flex: none; margin-left: auto; }
+  .calm { font-size: 13px; color: var(--text-2); padding: 8px 12px; border-radius: 8px;
+    background: color-mix(in srgb, var(--positive) 8%, transparent); border-left: 3px solid var(--positive); }
+
+  /* ---------- 指数行 ---------- */
+  .indices { display: flex; gap: 26px; flex-wrap: wrap; margin: 16px 0 4px; }
+  .idx .nm { font-size: 12px; color: var(--text-3); }
+  .idx .pr { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .idx .chg { font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .chg.up { color: var(--positive); } .chg.down { color: var(--danger); }
+  .idx .sub { font-size: 11.5px; color: var(--text-4); }
+
+  /* ---------- 分项卡 ---------- */
+  .comp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .card { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; background: var(--surface); }
+  .card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .card .nm { font-size: 13px; color: var(--text-2); }
+  .card .sc { font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .card .sc .zn { font-size: 11.5px; margin-left: 4px; }
+  .z-extreme-fear, .z-fear { color: var(--danger); }
+  .z-neutral { color: var(--warning); }
+  .z-greed, .z-extreme-greed { color: var(--positive); }
+  .card .mid { display: flex; align-items: baseline; gap: 12px; margin-top: 3px; flex-wrap: wrap; }
+  .card .val { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .card .deltas { font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .pband { position: relative; height: 8px; border-radius: 4px; margin-top: 10px;
+    background: linear-gradient(to right,
+      color-mix(in srgb, var(--danger) 28%, transparent),
+      color-mix(in srgb, var(--warning) 20%, transparent) 50%,
+      color-mix(in srgb, var(--positive) 28%, transparent)); }
+  .pband .marker { position: absolute; top: -3px; width: 3px; height: 14px; border-radius: 2px; background: var(--text-1); transform: translateX(-50%); }
+  .card .meta { font-size: 11.5px; color: var(--text-3); margin-top: 7px; }
+  .card .note { font-size: 11.5px; color: var(--text-4); margin-top: 3px; }
+
+  /* ---------- 组合警报面板 ---------- */
+  .pf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+  .badge { font-size: 11.5px; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+  .badge.st-tailwind { color: var(--positive); border: 1px solid color-mix(in srgb, var(--positive) 45%, transparent); }
+  .badge.st-headwind { color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent); }
+  .badge.st-neutral { color: var(--text-3); border: 1px solid var(--border); }
+  .pf-card .nm { font-size: 12.5px; color: var(--text-3); display: flex; justify-content: space-between; gap: 8px; }
+  .pf-card .big { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 3px; }
+  .pf-card .sub2 { font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; margin-top: 3px; }
+
+  .events { display: flex; gap: 8px; flex-wrap: wrap; }
+  .evt { font-size: 12px; border: 1px solid var(--border); border-radius: 8px; padding: 5px 11px; color: var(--text-2); background: var(--surface); font-variant-numeric: tabular-nums; }
+  .evt b { color: var(--text-1); font-weight: 600; margin-right: 6px; }
+  .evt.k-fomc { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+
+  .groups { display: flex; gap: 20px; flex-wrap: wrap; }
+  .grp { flex: 1 1 150px; }
+  .grp .gn { font-size: 12px; color: var(--text-3); display: flex; justify-content: space-between; }
+  .grp .gn b { font-variant-numeric: tabular-nums; color: var(--text-1); font-weight: 600; }
+  .grp .gt { position: relative; height: 6px; border-radius: 3px; background: var(--border); margin-top: 5px; }
+  .grp .gf { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 3px; background: var(--text-3); }
+
+  .siglog { font-size: 12.5px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+
+  .val-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 12px; overflow: hidden; }
+  .val-table th, .val-table td { text-align: left; font-size: 12.5px; padding: 7px 10px 7px 0; font-weight: 400; }
+  .val-table th { color: var(--text-3); border-bottom: 1px solid var(--border); }
+  .val-table td { border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); font-variant-numeric: tabular-nums; }
+  .pctbar { display: inline-block; height: 6px; border-radius: 3px; background: var(--accent); vertical-align: middle; margin-right: 6px; }
+
+  .flow { padding: 7px 0; border-bottom: 1px dashed color-mix(in srgb, var(--border) 60%, transparent); }
+  .flow:last-child { border-bottom: none; }
+  .flow .t { font-size: 13px; font-weight: 600; }
+  .flow .n { font-size: 12.5px; color: var(--text-2); }
+
+  /* ---------- 晨报侧栏 ---------- */
+  .brief-col { position: sticky; top: 20px; }
+  .brief-box { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: 14px 16px; margin-bottom: 14px; }
+  .brief-box h3 { font-size: 14px; font-weight: 600; margin: 0 0 4px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .brief-box .bdate { font-size: 11.5px; color: var(--text-3); font-weight: 400; }
+  .stale { font-size: 11px; color: var(--warning); border: 1px solid color-mix(in srgb, var(--warning) 45%, transparent); border-radius: 999px; padding: 1px 8px; }
+  .art { padding: 10px 0; border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+  .art .tt { font-size: 13px; font-weight: 600; line-height: 1.45; }
+  .art .tt a { color: inherit; text-decoration: none; }
+  .art .tt a:hover { color: var(--accent); }
+  .art .srcline { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+  .art .srcline .score { color: var(--accent); font-weight: 600; }
+  .art .one { font-size: 12.5px; color: var(--text-2); margin-top: 4px; }
+  .art .fld { font-size: 12px; color: var(--text-2); margin-top: 3px; }
+  .art .fld b { color: var(--text-3); font-weight: 500; }
+  .art .trunc { color: var(--warning); font-size: 11px; }
+  .brief-err { font-size: 12px; color: var(--warning); }
+
+  footer.page-foot { margin-top: 28px; font-size: 11.5px; color: var(--text-4); display: flex; gap: 14px; flex-wrap: wrap; }
+  .err { color: var(--warning); }
+  .loading { color: var(--text-3); padding: 40px 0; text-align: center; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="page-head">
+    <h1>市场情绪监控看板</h1>
+    <span class="asof" id="asof">加载中…</span>
+  </header>
+
+  <div class="layout">
+    <!-- ============ 左：情绪总览 ============ -->
+    <div class="main-col" id="main-col" hidden>
+      <section aria-label="状态灯">
+        <div class="hero">
+          <div class="light-wrap">
+            <div class="light" id="light"></div>
+            <div class="light-label" id="light-label">--</div>
+          </div>
+          <div class="hero-main">
+            <p class="headline" id="headline"></p>
+            <div class="meta-row" id="meta-row"></div>
+          </div>
+        </div>
+        <div class="alerts" id="alerts"></div>
+      </section>
+
+      <section class="indices" id="indices"></section>
+
+      <section id="comp-section" hidden>
+        <h2 class="section-title">核心分项 · 0=极度恐惧 100=极度贪婪</h2>
+        <div class="comp-grid" id="components"></div>
+      </section>
+
+      <section id="pf-section" hidden>
+        <h2 class="section-title">组合专属警报（长久期 · 高集中度）</h2>
+        <div class="pf-grid" id="portfolio"></div>
+      </section>
+
+      <section id="evt-section" hidden>
+        <h2 class="section-title">未来 30 天事件</h2>
+        <div class="events" id="events"></div>
+      </section>
+
+      <section id="spec-section" hidden>
+        <h2 class="section-title">光谱构成</h2>
+        <div class="groups" id="groups"></div>
+      </section>
+
+      <section id="sig-section" hidden>
+        <h2 class="section-title">信号日志（越阈自动记录 · 21/63 日结算）</h2>
+        <div class="siglog" id="siglog"></div>
+      </section>
+
+      <section id="val-section" hidden>
+        <h2 class="section-title">估值位置（周更）<span class="asof" id="val-updated"></span></h2>
+        <table class="val-table">
+          <thead><tr><th>指标</th><th>当前</th><th>参照</th><th>历史分位</th><th>判断</th></tr></thead>
+          <tbody id="val-body"></tbody>
+        </table>
+      </section>
+
+      <section id="flow-section" hidden>
+        <h2 class="section-title">资金面（周更）</h2>
+        <div id="flows"></div>
+      </section>
+
+      <footer class="page-foot">
+        <span id="conf"></span>
+        <span>数据源：FRED / Yahoo Finance / 人工维护</span>
+        <span class="err" id="errors"></span>
+      </footer>
+    </div>
+
+    <!-- ============ 右：晨报 ============ -->
+    <div class="brief-col" id="brief-col" hidden>
+      <h2 class="section-title" style="margin-top:12px">晨报重点</h2>
+      <div class="brief-box" id="brief-invest" hidden>
+        <h3>📈 投资 <span class="bdate" id="bi-date"></span><span class="stale" id="bi-stale" hidden></span></h3>
+        <div id="bi-list"></div>
+      </div>
+      <div class="brief-box" id="brief-ai" hidden>
+        <h3>🤖 AI <span class="bdate" id="ba-date"></span><span class="stale" id="ba-stale" hidden></span></h3>
+        <div id="ba-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">正在加载数据…</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var LEVEL_LABEL = { green: "绿灯 · 持有", yellow: "黄灯 · 警惕", red: "红灯 · 降风险" };
+  var ST_LABEL = { tailwind: "顺风", neutral: "中性", headwind: "逆风" };
+
+  function zoneClass(zone) {
+    if (zone === "极度恐惧") return "z-extreme-fear";
+    if (zone === "恐惧") return "z-fear";
+    if (zone === "中性") return "z-neutral";
+    if (zone === "贪婪") return "z-greed";
+    return "z-extreme-greed";
+  }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function renderSentiment(main) {
+    if (!main || !main.composite) return;
+    document.getElementById("main-col").hidden = false;
+    var c = main.composite;
+    var st = main.status || { level: "green", headline: c.guidance || "", alerts: [] };
+    document.getElementById("asof").textContent = "情绪数据更新于 " + (main.asOf || "--");
+
+    var light = document.getElementById("light");
+    light.className = "light lv-" + st.level;
+    var ll = document.getElementById("light-label");
+    ll.textContent = LEVEL_LABEL[st.level] || st.level;
+    ll.className = "light-label lv-" + st.level;
+    document.getElementById("headline").textContent = st.headline || c.guidance || "";
+
+    var mr = document.getElementById("meta-row");
+    function addChip(parts) {
+      var s = el("span", "chip");
+      parts.forEach(function (p) {
+        if (p.bold) s.appendChild(el("b", null, p.text));
+        else s.appendChild(document.createTextNode(p.text));
+      });
+      mr.appendChild(s);
+    }
+    addChip([{ text: "光谱 " }, { text: String(c.score), bold: true }, { text: " " + (c.zone || "") }]);
+    if (c.confirmation) addChip([{ text: "确认强度 " }, { text: c.confirmation, bold: true }]);
+    if (c.externalFearGreed && typeof c.externalFearGreed.score === "number") {
+      addChip([{ text: "外部恐贪 " }, { text: String(c.externalFearGreed.score), bold: true },
+               { text: " " + (c.externalFearGreed.label || "") }]);
+    }
+    if (c.verdict) addChip([{ text: "市场位置：" + c.verdict }]);
+
+    var aw = document.getElementById("alerts");
+    var alerts = st.alerts || [];
+    if (!alerts.length) {
+      aw.appendChild(el("div", "calm", "无越阈信号，一切如常——坚持原计划。"));
+    } else {
+      alerts.forEach(function (a) {
+        var row = el("div", "alert lv-" + a.level);
+        row.appendChild(el("span", null, a.text));
+        row.appendChild(el("span", "act", a.actionable ? "⚑ 需行动" : "观察"));
+        aw.appendChild(row);
+      });
+    }
+
+    var idxWrap = document.getElementById("indices");
+    (main.indices || []).forEach(function (ix) {
+      var box = el("div", "idx");
+      box.appendChild(el("div", "nm", ix.name + (ix.date ? " · " + ix.date : "")));
+      box.appendChild(el("div", "pr", ix.price != null ? ix.price.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "--"));
+      if (ix.changePct != null) {
+        var up = ix.changePct >= 0;
+        box.appendChild(el("div", "chg " + (up ? "up" : "down"), (up ? "+" : "") + ix.changePct + "%"));
+      }
+      if (ix.vs200d != null) {
+        box.appendChild(el("div", "sub", "距200日线 " + (ix.vs200d >= 0 ? "+" : "") + ix.vs200d + "%"));
+      }
+      idxWrap.appendChild(box);
+    });
+
+    var compWrap = document.getElementById("components");
+    (main.components || []).forEach(function (cp) {
+      var card = el("div", "card");
+      var top = el("div", "top");
+      top.appendChild(el("span", "nm", cp.name));
+      var sc = el("span", "sc", String(cp.score != null ? cp.score : "--"));
+      sc.appendChild(el("span", "zn " + zoneClass(cp.zone), cp.zone || ""));
+      top.appendChild(sc);
+      card.appendChild(top);
+      var mid = el("div", "mid");
+      mid.appendChild(el("span", "val", cp.value != null ? String(cp.value) : "--"));
+      var dparts = [];
+      if (cp.delta1d) dparts.push("日 " + cp.delta1d);
+      if (cp.delta1w) dparts.push("周 " + cp.delta1w);
+      if (dparts.length) mid.appendChild(el("span", "deltas", dparts.join(" · ")));
+      card.appendChild(mid);
+      if (typeof cp.percentile1y === "number") {
+        var band = el("div", "pband");
+        var mk = el("div", "marker");
+        mk.style.left = Math.max(0, Math.min(100, cp.percentile1y)) + "%";
+        band.appendChild(mk);
+        card.appendChild(band);
+        card.appendChild(el("div", "meta",
+          "1年分位 " + cp.percentile1y + "%" +
+          (typeof cp.percentile5y === "number" ? " · 5年 " + cp.percentile5y + "%" : "") +
+          (cp.threshold ? " · " + cp.threshold : "")));
+      } else if (cp.threshold) {
+        card.appendChild(el("div", "meta", cp.threshold));
+      }
+      var note = [cp.note, cp.source].filter(Boolean).join(" · ");
+      if (note) card.appendChild(el("div", "note", note));
+      compWrap.appendChild(card);
+    });
+    document.getElementById("comp-section").hidden = !(main.components || []).length;
+
+    var pf = main.portfolio || {};
+    var pfWrap = document.getElementById("portfolio");
+    function pfCard(name, bigText, subText, status, noteText) {
+      var box = el("div", "card pf-card");
+      var nm = el("div", "nm");
+      nm.appendChild(el("span", null, name));
+      nm.appendChild(el("span", "badge st-" + status, ST_LABEL[status] || status));
+      box.appendChild(nm);
+      box.appendChild(el("div", "big", bigText));
+      if (subText) box.appendChild(el("div", "sub2", subText));
+      if (noteText) box.appendChild(el("div", "note", noteText));
+      pfWrap.appendChild(box);
+    }
+    if (pf.realRate) {
+      var rr = pf.realRate;
+      pfCard("10Y 实际利率（DFII10）", rr.value + "%",
+        "月变动 " + (rr.monthChangeBp > 0 ? "+" : "") + rr.monthChangeBp + "bp · " + rr.date,
+        rr.status, rr.note);
+    }
+    if (pf.netLiquidity) {
+      var nl = pf.netLiquidity;
+      pfCard("净流动性（WALCL−TGA−RRP）", "≈" + (nl.value / 1000).toFixed(2) + " 万亿美元",
+        "4周变动 " + (nl.mom4wBn >= 0 ? "+" : "") + Math.round(nl.mom4wBn * 10) + " 亿 · z=" + nl.z4w + " · " + nl.date,
+        nl.status, nl.note);
+    }
+    document.getElementById("pf-section").hidden = !pfWrap.children.length;
+
+    var evWrap = document.getElementById("events");
+    (main.events || []).forEach(function (ev) {
+      var chipEl = el("span", "evt k-" + ev.kind);
+      chipEl.appendChild(el("b", null, (ev.date || "").slice(5)));
+      chipEl.appendChild(document.createTextNode(ev.label));
+      evWrap.appendChild(chipEl);
+    });
+    document.getElementById("evt-section").hidden = !(main.events || []).length;
+
+    var gs = c.groupScores || {};
+    var gWrap = document.getElementById("groups");
+    Object.keys(gs).forEach(function (g) {
+      var box = el("div", "grp");
+      var gn = el("div", "gn");
+      gn.appendChild(el("span", null, g));
+      gn.appendChild(el("b", null, String(Math.round(gs[g]))));
+      box.appendChild(gn);
+      var track = el("div", "gt");
+      var fill = el("div", "gf");
+      fill.style.width = Math.max(2, Math.round(gs[g])) + "%";
+      track.appendChild(fill);
+      box.appendChild(track);
+      gWrap.appendChild(box);
+    });
+    document.getElementById("spec-section").hidden = !Object.keys(gs).length;
+
+    var ss = main.signalStats || {};
+    var sigEl = document.getElementById("siglog");
+    if (ss.total > 0) {
+      var txt = "共 " + ss.total + " 条越阈信号 · 21日已结算 " + (ss.settled21d || 0) + " 条";
+      if (ss.winRate21d != null) txt += " · 21日胜率 " + ss.winRate21d + "% · 平均收益 " + ss.avgRet21d + "%";
+      sigEl.textContent = txt;
+    } else {
+      sigEl.textContent = "暂无越阈信号记录。每当警报触发，系统自动登记 SPX 点位，21/63 个交易日后结算复盘。";
+    }
+    document.getElementById("sig-section").hidden = false;
+
+    var vb = document.getElementById("val-body");
+    (main.valuation || []).forEach(function (v) {
+      var tr = document.createElement("tr");
+      tr.appendChild(el("td", null, v.name));
+      tr.appendChild(el("td", null, v.value));
+      tr.appendChild(el("td", null, v.ref || ""));
+      var tdP = document.createElement("td");
+      if (typeof v.percentile === "number") {
+        var bar = el("span", "pctbar");
+        bar.style.width = Math.round(v.percentile * 0.5) + "px";
+        tdP.appendChild(bar);
+        tdP.appendChild(document.createTextNode(v.percentile + "%"));
+      }
+      tr.appendChild(tdP);
+      tr.appendChild(el("td", null, v.zone || ""));
+      vb.appendChild(tr);
+    });
+    document.getElementById("val-updated").textContent = main.valuationUpdatedAt ? " · " + main.valuationUpdatedAt : "";
+    document.getElementById("val-section").hidden = !(main.valuation || []).length;
+
+    var fw = document.getElementById("flows");
+    (main.flows || []).forEach(function (f) {
+      var box = el("div", "flow");
+      box.appendChild(el("div", "t", f.title));
+      box.appendChild(el("div", "n", f.note));
+      fw.appendChild(box);
+    });
+    document.getElementById("flow-section").hidden = !(main.flows || []).length;
+
+    var teny = main.rates && main.rates.us10y ? "10Y美债 " + main.rates.us10y.value + "%" : "";
+    document.getElementById("conf").textContent =
+      "合成置信度 " + (c.confidence != null ? c.confidence + "%" : "--") + (teny ? " · " + teny : "");
+    document.getElementById("errors").textContent =
+      (main.errors && main.errors.length) ? "降级项 " + main.errors.length + " 个（已自动用备用源）" : "";
+  }
+
+  function renderBrief(bucket, boxId, dateId, staleId, listId) {
+    var box = document.getElementById(boxId);
+    if (!bucket) return;
+    if (bucket.error) {
+      box.hidden = false;
+      document.getElementById(listId).appendChild(el("div", "brief-err", bucket.error));
+      return;
+    }
+    var arts = bucket.articles || [];
+    if (!arts.length) return;
+    box.hidden = false;
+    document.getElementById(dateId).textContent = (bucket.date || "") + " · 共" + (bucket.total || arts.length) + "条";
+    if (typeof bucket.staleDays === "number" && bucket.staleDays > 0) {
+      var st = document.getElementById(staleId);
+      st.hidden = false;
+      st.textContent = bucket.staleDays + " 天前";
+    }
+    var list = document.getElementById(listId);
+    arts.forEach(function (a) {
+      var row = el("div", "art");
+      var tt = el("div", "tt");
+      if (a.url) {
+        var link = el("a", null, a.title);
+        link.href = a.url; link.target = "_blank"; link.rel = "noopener";
+        tt.appendChild(link);
+      } else {
+        tt.textContent = a.title;
+      }
+      row.appendChild(tt);
+      var sr = el("div", "srcline");
+      sr.appendChild(el("span", "score", "⭐" + a.score));
+      sr.appendChild(document.createTextNode(" " + (a.source || "") + (a.tag ? " · " + a.tag : "")));
+      row.appendChild(sr);
+      if (a.oneLine) row.appendChild(el("div", "one", a.oneLine));
+      if (a.core) { var f1 = el("div", "fld"); f1.appendChild(el("b", null, "核心事实 ")); f1.appendChild(document.createTextNode(a.core)); row.appendChild(f1); }
+      if (a.impact) { var f2 = el("div", "fld"); f2.appendChild(el("b", null, "市场影响 ")); f2.appendChild(document.createTextNode(a.impact)); row.appendChild(f2); }
+      if (a.truncated) row.appendChild(el("div", "trunc", "⚠ 摘要可能被生成端截断，点击查看原文"));
+      list.appendChild(row);
+    });
+  }
+
+  function renderBriefAll(data) {
+    if (!data || !data.briefs) return;
+    renderBrief(data.briefs.invest, "brief-invest", "bi-date", "bi-stale", "bi-list");
+    renderBrief(data.briefs.ai, "brief-ai", "ba-date", "ba-stale", "ba-list");
+    var anyVisible = !document.getElementById("brief-invest").hidden || !document.getElementById("brief-ai").hidden;
+    document.getElementById("brief-col").hidden = !anyVisible;
+    if (anyVisible && data.asOf) {
+      document.getElementById("asof").textContent += " · 晨报 " + data.asOf.slice(0, 10);
+    }
+  }
+
+  Promise.allSettled([
+    fetch("data/sentiment.json").then(function (r) { return r.json(); }),
+    fetch("data/brief.json").then(function (r) { return r.json(); })
+  ]).then(function (results) {
+    document.getElementById("loading").hidden = true;
+    if (results[0].status === "fulfilled") renderSentiment(results[0].value);
+    if (results[1].status === "fulfilled") renderBriefAll(results[1].value);
+    if (results[0].status !== "fulfilled" && results[1].status !== "fulfilled") {
+      document.getElementById("loading").hidden = false;
+      document.getElementById("loading").textContent = "数据加载失败，请稍后再试。";
+    }
+  });
+})();
+</script>
+</body>
+</html>

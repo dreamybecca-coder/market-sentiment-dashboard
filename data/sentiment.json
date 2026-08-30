@@ -1,0 +1,240 @@
+{
+ "asOf": "2026-08-30 16:17",
+ "status": {
+  "level": "green",
+  "headline": "光谱偏贪婪：持有 OK，但新增风险预算的赔率已差。",
+  "alerts": [],
+  "alertCount": 0
+ },
+ "composite": {
+  "score": 69,
+  "zone": "贪婪",
+  "confirmation": "中",
+  "confidence": 88.0,
+  "groupScores": {
+   "信用": 87.0,
+   "波动率": 66.54545454545455,
+   "广度": 53.292682926829265
+  },
+  "guidance": "光谱偏贪婪：持有 OK，但新增风险预算的赔率已差。",
+  "verdict": "有点贵，但是还好",
+  "externalFearGreed": {
+   "score": 70,
+   "label": "贪婪",
+   "source": "CNN Fear & Greed（用户口径：恐贪指数）",
+   "note": "离极端还有距离"
+  }
+ },
+ "components": [
+  {
+   "key": "credit",
+   "name": "高收益债利差 OAS",
+   "group": "信用",
+   "value": "2.63%",
+   "score": 87,
+   "zone": "极度贪婪",
+   "delta1d": "-0.04",
+   "delta1w": "-21bp/20日",
+   "percentile1y": 0.8,
+   "percentile5y": 1.9,
+   "threshold": "≥3.75% 警戒 · ≥5% 或 30日+50bp 降风险",
+   "weight": 20,
+   "confidence": 1.0,
+   "source": "FRED（自动）",
+   "note": "领先股市 2–4 周；利差走阔=风险累积"
+  },
+  {
+   "key": "volatility",
+   "name": "VIX 波动率",
+   "group": "波动率",
+   "value": "14.5",
+   "score": 78,
+   "zone": "贪婪",
+   "delta1d": "-4.6%",
+   "delta1w": "-9.4%/周",
+   "percentile1y": 4.2,
+   "percentile5y": null,
+   "threshold": "分位>90% 恐慌 · <10% 自满",
+   "weight": 15,
+   "confidence": 1.0,
+   "source": "FRED VIXCLS（自动）",
+   "note": "0DTE 时代需与 PCR 交叉验证"
+  },
+  {
+   "key": "putcall",
+   "name": "PCR 看跌/看涨期权比",
+   "group": "波动率",
+   "value": "0.78",
+   "score": 42,
+   "zone": "中性",
+   "delta1d": null,
+   "delta1w": null,
+   "percentile1y": null,
+   "percentile5y": null,
+   "threshold": "滚动分位>90% 恐慌 · <10% 自满（周更）",
+   "weight": 10,
+   "confidence": 0.7,
+   "source": "人工维护（周更）",
+   "note": "情绪中性偏乐观，没有恐慌，也没有疯狂投机"
+  },
+  {
+   "key": "breadth",
+   "name": "S5TH 广度（%>200日线）",
+   "group": "广度",
+   "value": "55.1%",
+   "score": 45,
+   "zone": "中性",
+   "delta1d": null,
+   "delta1w": null,
+   "percentile1y": null,
+   "percentile5y": null,
+   "threshold": "<25% 恐慌反向区 · >90% 修复=牛市确认",
+   "weight": 15,
+   "confidence": 0.7,
+   "source": "人工维护（周更）",
+   "note": "中性略偏多，刚过一半，广度一般"
+  },
+  {
+   "key": "momentum",
+   "name": "SPX 动量（vs 125日线）",
+   "group": "广度",
+   "value": "+6.0%",
+   "score": 62,
+   "zone": "贪婪",
+   "delta1d": null,
+   "delta1w": null,
+   "percentile1y": null,
+   "percentile5y": null,
+   "threshold": "",
+   "weight": 10,
+   "confidence": 1.0,
+   "source": "FRED SP500（自动）",
+   "note": "价格高于均线=动量健康（顺势）"
+  }
+ ],
+ "indices": [
+  {
+   "symbol": "SPX",
+   "name": "标普500",
+   "price": 7711.76,
+   "changePct": -0.25,
+   "vs200d": 8.3,
+   "date": "2026-08-28"
+  },
+  {
+   "symbol": "NDX",
+   "name": "纳指综合（NDX 降级）",
+   "price": 26402.42,
+   "changePct": -0.52,
+   "date": "2026-08-28"
+  },
+  {
+   "symbol": "VIX",
+   "name": "波动率指数",
+   "price": 14.51,
+   "changePct": -4.6,
+   "date": "2026-08-27"
+  }
+ ],
+ "portfolio": {
+  "realRate": {
+   "value": 2.34,
+   "date": "2026-08-27",
+   "monthChangeBp": -7.0,
+   "status": "neutral",
+   "note": ">+30bp/月=长久期组合独立逆风（可无视情绪光谱直接生效）"
+  },
+  "netLiquidity": {
+   "value": 5779.0,
+   "date": "2026-08-26",
+   "mom4wBn": -45.0,
+   "z4w": -0.29,
+   "status": "neutral",
+   "note": "WALCL−TGA−RRP；4 周动量 z>+1 顺风 / z<−1 逆风"
+  }
+ },
+ "events": [
+  {
+   "date": "2026-08-30",
+   "label": "月末养老金再平衡窗口",
+   "kind": "rebalance"
+  },
+  {
+   "date": "2026-09-16",
+   "label": "FOMC 决议",
+   "kind": "fomc"
+  },
+  {
+   "date": "2026-09-18",
+   "label": "期权到期（OpEx）",
+   "kind": "opex"
+  }
+ ],
+ "signalStats": {
+  "total": 0,
+  "settled21d": 0
+ },
+ "valuation": [
+  {
+   "name": "SPX PE-TTM",
+   "value": "27.8–28.2x",
+   "ref": "历史均值≈16.5",
+   "percentile": 85,
+   "zone": "偏贵"
+  },
+  {
+   "name": "SPX Forward PE (2026E)",
+   "value": "20.8–21.0x",
+   "ref": "历史均值≈19",
+   "percentile": 62,
+   "zone": "中性偏高"
+  },
+  {
+   "name": "NDX PE-TTM",
+   "value": "36.0–36.5x",
+   "ref": "近10年分位 84–89%",
+   "percentile": 86,
+   "zone": "很贵"
+  },
+  {
+   "name": "NDX Forward PE (2026E)",
+   "value": "25.5–26.0x",
+   "ref": "AI 盈利预期支撑",
+   "percentile": 70,
+   "zone": "偏高"
+  }
+ ],
+ "valuationUpdatedAt": "2026-08-21",
+ "flows": [
+  {
+   "title": "CTA",
+   "note": "巨量买入后动能减弱，转为小幅净卖出；卖出量可被 Long Only / HF / 散户吸收，不必恐慌"
+  },
+  {
+   "title": "养老金",
+   "note": "月末再平衡卖出处于历史高分位（约 83 分位），属可预期的技术性卖压"
+  },
+  {
+   "title": "Long Only",
+   "note": "愿意继续增持科技多头，是关键承接力量；重大财报前加仓节奏会放缓"
+  },
+  {
+   "title": "Hedge Fund",
+   "note": "gross / net leverage 快速下降，砍多头同时撤空头保护，观望情绪浓"
+  }
+ ],
+ "rates": {
+  "us10y": {
+   "value": 4.67,
+   "date": "2026-08-27"
+  }
+ },
+ "errors": [
+  "Yahoo %5EVXV（已降级）: 429 Too Many Requests",
+  "Yahoo %5EVIX（已降级）: 429 Too Many Requests",
+  "Yahoo %5ENDX（已降级）: yahoo time budget exhausted",
+  "Yahoo SPY（预算耗尽，已降级）",
+  "Yahoo TLT（预算耗尽，已降级）",
+  "Yahoo RSP（预算耗尽，已降级）"
+ ]
+}
