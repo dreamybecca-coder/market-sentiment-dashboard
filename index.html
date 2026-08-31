@@ -220,6 +220,11 @@
         <div class="pf-grid" id="portfolio"></div>
       </section>
 
+      <section id="macro-section" hidden>
+        <h2 class="section-title">宏观领先指标（6–18 个月慢变量 · 不进情绪光谱）</h2>
+        <div class="pf-grid" id="macro"></div>
+      </section>
+
       <section id="evt-section" hidden>
         <h2 class="section-title">未来 30 天事件</h2>
         <div class="events" id="events"></div>
@@ -438,6 +443,45 @@
         nl.status, nl.note, nl.meaning, nl.what);
     }
     document.getElementById("pf-section").hidden = !pfWrap.children.length;
+
+    // ---- 宏观领先指标 ----
+    var mc = main.macro || {};
+    var mcWrap = document.getElementById("macro");
+    function mcCard(name, bigText, subText, obj) {
+      if (!obj) return;
+      var box = el("div", "card pf-card");
+      var nm = el("div", "nm");
+      nm.appendChild(el("span", null, name));
+      nm.appendChild(el("span", "badge st-" + (obj.status || "neutral"), ST_LABEL[obj.status] || "中性"));
+      box.appendChild(nm);
+      box.appendChild(el("div", "big", bigText));
+      if (subText) box.appendChild(el("div", "sub2", subText));
+      if (obj.meaning) box.appendChild(el("div", "meaning", obj.meaning));
+      if (obj.threshold) box.appendChild(el("div", "meta", obj.threshold));
+      if (obj.what) {
+        var det = el("details", "what");
+        det.appendChild(el("summary", null, "这是什么？"));
+        det.appendChild(el("div", "what-body", obj.what));
+        box.appendChild(det);
+      }
+      mcWrap.appendChild(box);
+    }
+    if (mc.curve) {
+      var cv = mc.curve;
+      mcCard("收益率曲线 10Y−3M",
+        (cv.value > 0 ? "+" : "") + cv.value + "%" + (cv.value < 0 ? "（倒挂）" : ""),
+        (cv.chg3m != null ? "3个月变动 " + (cv.chg3m > 0 ? "+" : "") + cv.chg3m + "pt · " : "") + cv.date,
+        cv);
+    }
+    if (mc.claims) {
+      var cl = mc.claims;
+      mcCard("失业金初请（周度）",
+        cl.value + " 万人",
+        (cl.ma4 != null ? "4周均值 " + cl.ma4 + " 万" : "") +
+        (cl.yoy4w != null ? " · 同比 " + (cl.yoy4w > 0 ? "+" : "") + cl.yoy4w + "%" : "") + " · " + cl.date,
+        cl);
+    }
+    document.getElementById("macro-section").hidden = !mcWrap.children.length;
 
     var evWrap = document.getElementById("events");
     (main.events || []).forEach(function (ev) {
