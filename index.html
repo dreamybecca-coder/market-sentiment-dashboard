@@ -97,6 +97,32 @@
   .pband .marker { position: absolute; top: -3px; width: 3px; height: 14px; border-radius: 2px; background: var(--text-1); transform: translateX(-50%); }
   .card .meta { font-size: 11.5px; color: var(--text-3); margin-top: 7px; }
   .card .note { font-size: 11.5px; color: var(--text-4); margin-top: 3px; }
+  .card .meaning { font-size: 12.5px; color: var(--text-2); margin-top: 8px; line-height: 1.55; }
+  details.what { margin-top: 6px; }
+  details.what summary { font-size: 11.5px; color: var(--text-4); cursor: pointer; list-style: none; user-select: none; }
+  details.what summary::before { content: "▸ "; }
+  details.what[open] summary::before { content: "▾ "; }
+  details.what .what-body { font-size: 12px; color: var(--text-3); margin-top: 4px; line-height: 1.55; }
+  .legend { font-size: 12px; color: var(--text-3); margin: 0 0 10px; line-height: 1.6; }
+  .legend b { color: var(--text-2); }
+
+  /* ---------- 真光谱 ---------- */
+  .spectrum-wrap { margin: 34px 8px 8px; }
+  .spectrum {
+    position: relative; height: 22px; border-radius: 11px;
+    background: linear-gradient(to right,
+      color-mix(in srgb, var(--danger) 55%, transparent),
+      color-mix(in srgb, var(--warning) 45%, transparent) 50%,
+      color-mix(in srgb, var(--positive) 55%, transparent));
+  }
+  .sp-marker { position: absolute; top: -4px; width: 4px; height: 30px; border-radius: 2px; background: var(--text-1); transform: translateX(-50%); }
+  .sp-marker.grp { width: 2px; height: 26px; top: -2px; opacity: .5; }
+  .sp-glabel { position: absolute; top: -26px; transform: translateX(-50%); font-size: 11px; color: var(--text-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .sp-clabel { position: absolute; top: 28px; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: var(--text-1); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .sp-ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-4); margin-top: 26px; }
+  .grp-explains { margin-top: 12px; display: flex; flex-direction: column; gap: 5px; }
+  .grp-explain { font-size: 12px; color: var(--text-3); line-height: 1.55; }
+  .grp-explain b { color: var(--text-2); font-weight: 600; font-variant-numeric: tabular-nums; }
 
   /* ---------- 组合警报面板 ---------- */
   .pf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
@@ -184,6 +210,7 @@
 
       <section id="comp-section" hidden>
         <h2 class="section-title">核心分项 · 0=极度恐惧 100=极度贪婪</h2>
+        <p class="legend">情绪分数是<b>反向指标</b>：80 以上＝极度贪婪（历史上往往是风险区，别追高）；20 以下＝极度恐惧（历史上往往是机会区，分批买）。每张卡都有「现在说明什么」的解读，点开「这是什么？」看指标定义。</p>
         <div class="comp-grid" id="components"></div>
       </section>
 
@@ -198,8 +225,12 @@
       </section>
 
       <section id="spec-section" hidden>
-        <h2 class="section-title">光谱构成</h2>
-        <div class="groups" id="groups"></div>
+        <h2 class="section-title">情绪光谱：市场现在站在哪</h2>
+        <div class="spectrum-wrap">
+          <div class="spectrum" id="spectrum"></div>
+          <div class="sp-ends"><span>0 极度恐惧（机会区）</span><span>50 中性</span><span>100 极度贪婪（风险区）</span></div>
+        </div>
+        <div class="grp-explains" id="grp-explains"></div>
       </section>
 
       <section id="sig-section" hidden>
@@ -354,13 +385,20 @@
       }
       var note = [cp.note, cp.source].filter(Boolean).join(" · ");
       if (note) card.appendChild(el("div", "note", note));
+      if (cp.meaning) card.appendChild(el("div", "meaning", cp.meaning));
+      if (cp.what) {
+        var det = el("details", "what");
+        det.appendChild(el("summary", null, "这是什么？"));
+        det.appendChild(el("div", "what-body", cp.what));
+        card.appendChild(det);
+      }
       compWrap.appendChild(card);
     });
     document.getElementById("comp-section").hidden = !(main.components || []).length;
 
     var pf = main.portfolio || {};
     var pfWrap = document.getElementById("portfolio");
-    function pfCard(name, bigText, subText, status, noteText) {
+    function pfCard(name, bigText, subText, status, noteText, meaning, what) {
       var box = el("div", "card pf-card");
       var nm = el("div", "nm");
       nm.appendChild(el("span", null, name));
@@ -368,20 +406,30 @@
       box.appendChild(nm);
       box.appendChild(el("div", "big", bigText));
       if (subText) box.appendChild(el("div", "sub2", subText));
+      if (meaning) box.appendChild(el("div", "meaning", meaning));
+      if (what) {
+        var det = el("details", "what");
+        det.appendChild(el("summary", null, "这是什么？"));
+        det.appendChild(el("div", "what-body", what));
+        box.appendChild(det);
+      }
       if (noteText) box.appendChild(el("div", "note", noteText));
       pfWrap.appendChild(box);
     }
     if (pf.realRate) {
       var rr = pf.realRate;
-      pfCard("10Y 实际利率（DFII10）", rr.value + "%",
-        "月变动 " + (rr.monthChangeBp > 0 ? "+" : "") + rr.monthChangeBp + "bp · " + rr.date,
-        rr.status, rr.note);
+      var sub = "月变动 " + (rr.monthChangeBp > 0 ? "+" : "") + rr.monthChangeBp + "bp · " + rr.date;
+      if (rr.realRate30) {
+        sub = "30Y " + rr.realRate30.value + "%（月 " +
+              (rr.realRate30.monthChangeBp > 0 ? "+" : "") + rr.realRate30.monthChangeBp + "bp） · " + sub;
+      }
+      pfCard("10Y 实际利率（DFII10）", rr.value + "%", sub, rr.status, rr.note, rr.meaning, rr.what);
     }
     if (pf.netLiquidity) {
       var nl = pf.netLiquidity;
       pfCard("净流动性（WALCL−TGA−RRP）", "≈" + (nl.value / 1000).toFixed(2) + " 万亿美元",
         "4周变动 " + (nl.mom4wBn >= 0 ? "+" : "") + Math.round(nl.mom4wBn * 10) + " 亿 · z=" + nl.z4w + " · " + nl.date,
-        nl.status, nl.note);
+        nl.status, nl.note, nl.meaning, nl.what);
     }
     document.getElementById("pf-section").hidden = !pfWrap.children.length;
 
@@ -395,19 +443,33 @@
     document.getElementById("evt-section").hidden = !(main.events || []).length;
 
     var gs = c.groupScores || {};
-    var gWrap = document.getElementById("groups");
+    var ge = c.groupExplains || {};
+    var spec = document.getElementById("spectrum");
     Object.keys(gs).forEach(function (g) {
-      var box = el("div", "grp");
-      var gn = el("div", "gn");
-      gn.appendChild(el("span", null, g));
-      gn.appendChild(el("b", null, String(Math.round(gs[g]))));
-      box.appendChild(gn);
-      var track = el("div", "gt");
-      var fill = el("div", "gf");
-      fill.style.width = Math.max(2, Math.round(gs[g])) + "%";
-      track.appendChild(fill);
-      box.appendChild(track);
-      gWrap.appendChild(box);
+      var pos = Math.max(2, Math.min(98, gs[g]));
+      var mk = el("div", "sp-marker grp");
+      mk.style.left = pos + "%";
+      spec.appendChild(mk);
+      var lb = el("div", "sp-glabel", g + " " + Math.round(gs[g]));
+      lb.style.left = pos + "%";
+      spec.appendChild(lb);
+    });
+    if (typeof c.score === "number") {
+      var cpos = Math.max(2, Math.min(98, c.score));
+      var cmk = el("div", "sp-marker");
+      cmk.style.left = cpos + "%";
+      spec.appendChild(cmk);
+      var clb = el("div", "sp-clabel", "综合 " + c.score + " " + (c.zone || ""));
+      clb.style.left = cpos + "%";
+      spec.appendChild(clb);
+    }
+    var geWrap = document.getElementById("grp-explains");
+    Object.keys(gs).forEach(function (g) {
+      var info = ge[g] || {};
+      var line = el("div", "grp-explain");
+      line.appendChild(el("b", null, g + " " + Math.round(gs[g]) + " · " + (info.state || "")));
+      line.appendChild(document.createTextNode("　" + (info.def || "")));
+      geWrap.appendChild(line);
     });
     document.getElementById("spec-section").hidden = !Object.keys(gs).length;
 
