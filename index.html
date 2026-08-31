@@ -397,10 +397,11 @@
         card.appendChild(el("div", "stale-warn", "⚠ 人工数据已 " + cp.staleDays + " 天未更新（应每周更新），结论可能已过时"));
       }
       if (cp.meaning) card.appendChild(el("div", "meaning", cp.meaning));
-      if (cp.what) {
+      if (cp.what || cp.guide) {
         var det = el("details", "what");
-        det.appendChild(el("summary", null, "这是什么？"));
-        det.appendChild(el("div", "what-body", cp.what));
+        det.appendChild(el("summary", null, "这是什么？怎么看？怎么用？"));
+        if (cp.what) det.appendChild(el("div", "what-body", cp.what));
+        if (cp.guide) det.appendChild(el("div", "what-body", cp.guide));
         card.appendChild(det);
       }
       compWrap.appendChild(card);
@@ -409,7 +410,7 @@
 
     var pf = main.portfolio || {};
     var pfWrap = document.getElementById("portfolio");
-    function pfCard(name, bigText, subText, status, noteText, meaning, what) {
+    function pfCard(name, bigText, subText, status, noteText, meaning, what, guide) {
       var box = el("div", "card pf-card");
       var nm = el("div", "nm");
       nm.appendChild(el("span", null, name));
@@ -418,10 +419,11 @@
       box.appendChild(el("div", "big", bigText));
       if (subText) box.appendChild(el("div", "sub2", subText));
       if (meaning) box.appendChild(el("div", "meaning", meaning));
-      if (what) {
+      if (what || guide) {
         var det = el("details", "what");
-        det.appendChild(el("summary", null, "这是什么？"));
-        det.appendChild(el("div", "what-body", what));
+        det.appendChild(el("summary", null, "这是什么？怎么看？怎么用？"));
+        if (what) det.appendChild(el("div", "what-body", what));
+        if (guide) det.appendChild(el("div", "what-body", guide));
         box.appendChild(det);
       }
       if (noteText) box.appendChild(el("div", "note", noteText));
@@ -434,13 +436,13 @@
         sub = "30Y " + rr.realRate30.value + "%（月 " +
               (rr.realRate30.monthChangeBp > 0 ? "+" : "") + rr.realRate30.monthChangeBp + "bp） · " + sub;
       }
-      pfCard("10Y 实际利率（DFII10）", rr.value + "%", sub, rr.status, rr.note, rr.meaning, rr.what);
+      pfCard("10Y 实际利率（DFII10）", rr.value + "%", sub, rr.status, rr.note, rr.meaning, rr.what, rr.guide);
     }
     if (pf.netLiquidity) {
       var nl = pf.netLiquidity;
       pfCard("净流动性（WALCL−TGA−RRP）", "≈" + (nl.value / 1000).toFixed(2) + " 万亿美元",
         "4周变动 " + (nl.mom4wBn >= 0 ? "+" : "") + Math.round(nl.mom4wBn * 10) + " 亿 · z=" + nl.z4w + " · " + nl.date,
-        nl.status, nl.note, nl.meaning, nl.what);
+        nl.status, nl.note, nl.meaning, nl.what, nl.guide);
     }
     document.getElementById("pf-section").hidden = !pfWrap.children.length;
 
@@ -458,10 +460,11 @@
       if (subText) box.appendChild(el("div", "sub2", subText));
       if (obj.meaning) box.appendChild(el("div", "meaning", obj.meaning));
       if (obj.threshold) box.appendChild(el("div", "meta", obj.threshold));
-      if (obj.what) {
+      if (obj.what || obj.guide) {
         var det = el("details", "what");
-        det.appendChild(el("summary", null, "这是什么？"));
-        det.appendChild(el("div", "what-body", obj.what));
+        det.appendChild(el("summary", null, "这是什么？怎么看？怎么用？"));
+        if (obj.what) det.appendChild(el("div", "what-body", obj.what));
+        if (obj.guide) det.appendChild(el("div", "what-body", obj.guide));
         box.appendChild(det);
       }
       mcWrap.appendChild(box);
