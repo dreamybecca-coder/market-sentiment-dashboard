@@ -1,5 +1,5 @@
 {
- "asOf": "2026-08-31 21:54",
+ "asOf": "2026-08-31 22:21",
  "status": {
   "level": "green",
   "headline": "市场偏热：手里的仓位继续拿着没问题；但现在新买入不划算——价格里已经装进了太多好消息，留给你的空间不大。",
@@ -7,14 +7,14 @@
   "alertCount": 0
  },
  "composite": {
-  "score": 69,
+  "score": 71,
   "zone": "贪婪",
   "confirmation": "中",
   "confidence": 88.0,
   "groupScores": {
    "信用": 87.0,
-   "波动率": 66.54545454545455,
-   "广度": 53.292682926829265
+   "波动率": 64.63636363636364,
+   "广度": 62.0
   },
   "groupExplains": {
    "信用": {
@@ -23,20 +23,20 @@
    },
    "波动率": {
     "def": "期权市场为「保险」定什么价（VIX、期限结构、看跌看涨比）",
-    "state": "偏乐观"
+    "state": "略偏乐观"
    },
    "广度": {
     "def": "上涨是普涨还是只靠少数巨头（200日线上占比、等权强弱、动量）",
-    "state": "中性"
+    "state": "略偏乐观"
    }
   },
   "guidance": "市场偏热：手里的仓位继续拿着没问题；但现在新买入不划算——价格里已经装进了太多好消息，留给你的空间不大。",
   "verdict": "有点贵，但是还好",
   "externalFearGreed": {
-   "score": 70,
-   "label": "贪婪",
-   "source": "CNN Fear & Greed（用户口径：恐贪指数）",
-   "note": "离极端还有距离"
+   "score": 51,
+   "label": "中性",
+   "source": "CNN Fear & Greed（浏览器自动抓取）",
+   "note": "从 70（贪婪）回落至 51（中性），市场情绪明显降温"
   }
  },
  "components": [
@@ -84,9 +84,9 @@
    "key": "putcall",
    "name": "PCR 看跌/看涨期权比",
    "group": "波动率",
-   "value": "0.78",
-   "score": 42,
-   "zone": "中性",
+   "value": "0.84",
+   "score": 36,
+   "zone": "恐惧",
    "delta1d": null,
    "delta1w": null,
    "percentile1y": null,
@@ -95,19 +95,19 @@
    "weight": 10,
    "confidence": 0.7,
    "source": "人工维护（周更）",
-   "note": "情绪中性偏乐观，没有恐慌，也没有疯狂投机",
-   "staleDays": 10,
+   "note": "中性偏乐观，较上期 0.78 略有上升，保护需求小幅增加",
+   "staleDays": 0,
    "what": "每成交 100 张看涨期权，对应多少张看跌期权。>1＝恐慌性买保护（反向看往往是机会）；<0.7＝投机过热。",
-   "meaning": "现在 0.78——中性偏乐观：没有恐慌，也没有疯狂投机。",
+   "meaning": "现在 0.84——中性偏乐观：没有恐慌，也没有疯狂投机。",
    "guide": "数据：人工周更。你自己查：CBOE 官网 cboe.com → Market Statistics → Daily Market Statistics 里的「TOTAL PUT/CALL RATIO」，免费公开；或直接把数字发我。怎么看：>1＝恐慌性买保护（反向看是机会）；<0.7＝投机过热。行动规则：配合一年滚动分位，>90% 分位是反向买点。局限：反映的是期权玩家情绪，不等于全市场。"
   },
   {
    "key": "breadth",
    "name": "S5TH 广度（%>200日线）",
    "group": "广度",
-   "value": "55.1%",
-   "score": 45,
-   "zone": "中性",
+   "value": "68.6%",
+   "score": 62,
+   "zone": "贪婪",
    "delta1d": null,
    "delta1w": null,
    "percentile1y": null,
@@ -116,10 +116,10 @@
    "weight": 15,
    "confidence": 0.7,
    "source": "人工维护（周更）",
-   "note": "中性略偏多，刚过一半，广度一般",
-   "staleDays": 10,
+   "note": "从 55.06% 升至 68.6%，接近普涨健康线 70%，广度明显改善",
+   "staleDays": 0,
    "what": "标普 500 的 500 家公司里，股价站在 200 天均线上方的占比。>70%＝普涨健康牛；<25%＝恐慌出清区。",
-   "meaning": "现在 55%——刚过一半：涨的是少数大票，不是全面牛市，也不是弱势，广度一般。",
+   "meaning": "现在 69%——刚过一半：涨的是少数大票，不是全面牛市，也不是弱势，广度一般。",
    "guide": "数据：人工周更。你自己查：indexindicators.com 搜「% of S&P 500 Stocks Above 200-Day Moving Average」，免费；或 barchart.com；或直接发我数字。怎么看：>70%＝普涨健康牛；55% 上下＝只有巨头在涨；<25%＝恐慌出清。行动规则：<25% 反向布局；从低位修复过 50% 是牛市确认。局限：巨头市值占比极高的时代，广度可以长期偏弱而指数照涨，所以要和 RSP/SPY 联看。"
   },
   {
@@ -275,8 +275,8 @@
    "zone": "偏高"
   }
  ],
- "valuationUpdatedAt": "2026-08-21 · PE/CAPE 自动更新",
- "curatedStaleDays": 10,
+ "valuationUpdatedAt": "2026-08-31 · PE/CAPE 自动更新",
+ "curatedStaleDays": 0,
  "flows": [
   {
    "title": "CTA",
