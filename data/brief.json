@@ -1,10 +1,10 @@
 {
- "asOf": "2026-09-18 09:07",
+ "asOf": "2026-09-19 09:07",
  "briefs": {
   "invest": {
    "file": "2026-09-18-morning-brief-Invest news.md",
    "date": "2026-09-18",
-   "staleDays": 0,
+   "staleDays": 1,
    "total": 10,
    "articles": [
     {
@@ -124,7 +124,7 @@
   "ai": {
    "file": "2026-09-18-morning-brief-AI news.md",
    "date": "2026-09-18",
-   "staleDays": 0,
+   "staleDays": 1,
    "total": 10,
    "articles": [
     {
