@@ -1,5 +1,5 @@
 {
- "asOf": "2026-10-19 18:16",
+ "asOf": "2026-10-19 18:18",
  "status": {
   "level": "red",
   "headline": "信用利差 3.23%（30日 +58bp）：降风险触发区",
@@ -8,7 +8,21 @@
     "key": "hy_red",
     "level": "red",
     "actionable": true,
-    "text": "信用利差 3.23%（30日 +58bp）：降风险触发区"
+    "text": "信用利差 3.23%（30日 +58bp）：降风险触发区",
+    "context": [
+     {
+      "title": "US Stock Futures Bounce After Chip…",
+      "source": "Bloomberg Markets",
+      "url": "https://www.bloomberg.com/news/articles/2026-10-18/stock-market-today-dow-s-p-live-updates",
+      "tag": "🟠 报道"
+     },
+     {
+      "title": "US rate rises are being amplified i…",
+      "source": "Financial Times Economy",
+      "url": "https://www.ft.com/content/cea20e2a-379c-4ea2-af94-353b1896b748",
+      "tag": "🟡 深度分析"
+     }
+    ]
    }
   ],
   "alertCount": 1
