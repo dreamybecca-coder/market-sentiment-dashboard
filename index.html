@@ -81,21 +81,40 @@
   .quad-now.tone-red b { color: var(--danger); }
   .quad-now.tone-green b { color: var(--positive); }
   .quad-now.tone-gray b { color: var(--text-3); }
-  .quad-grid { display: grid; grid-template-columns: 24px 1fr 1fr; grid-template-rows: 1fr 1fr 22px; gap: 6px; align-items: stretch; }
-  .quad-ylab { grid-row: 1 / 3; writing-mode: vertical-lr; transform: rotate(180deg); text-align: center;
-    font-size: 11px; color: var(--text-4); letter-spacing: 1px; }
-  .quad-cell { border-radius: 10px; padding: 9px 11px; font-size: 12px; color: var(--text-3);
-    background: color-mix(in srgb, var(--text-4) 5%, transparent); border: 1px solid transparent; line-height: 1.45; }
+  .quad-axis-lab { text-align: center; font-size: 11px; letter-spacing: 1px; padding: 2px 0; }
+  .quad-axis-lab.up { color: var(--danger); }
+  .quad-axis-lab.down { color: var(--positive); }
+  .quad-cells { display: grid; grid-template-columns: 1fr 1fr; gap: 0; position: relative; }
+  .quad-cells::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px;
+    background: var(--text-4); opacity: .5; }
+  .quad-cells::after { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px;
+    background: var(--text-4); opacity: .5; }
+  .quad-cell { padding: 10px 12px; font-size: 12px; color: var(--text-3); line-height: 1.45; position: relative; z-index: 1; margin: 3px; border-radius: 8px; border: 2px solid transparent; }
   .quad-cell .ql { font-weight: 600; font-size: 12.5px; display: block; margin-bottom: 2px; }
-  .quad-cell.active-red { background: color-mix(in srgb, var(--danger) 12%, transparent); border-color: var(--danger); color: var(--text-1); }
-  .quad-cell.active-green { background: color-mix(in srgb, var(--positive) 12%, transparent); border-color: var(--positive); color: var(--text-1); }
-  .quad-cell.active-gray { background: color-mix(in srgb, var(--text-3) 10%, transparent); border-color: var(--text-3); color: var(--text-1); }
-  .quad-xlab { grid-column: 2 / 4; text-align: center; font-size: 11px; color: var(--text-4); letter-spacing: 1px; }
+  .quad-cell .qd { font-size: 10.5px; color: var(--text-4); display: block; margin-bottom: 3px; letter-spacing: .5px; }
+  .quad-cell.q-rateshock { background: color-mix(in srgb, var(--danger) 5%, transparent); }
+  .quad-cell.q-growth { background: color-mix(in srgb, var(--positive) 5%, transparent); }
+  .quad-cell.q-riskoff { background: color-mix(in srgb, var(--danger) 9%, transparent); }
+  .quad-cell.q-easing { background: color-mix(in srgb, var(--positive) 9%, transparent); }
+  .quad-cell.active-red { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--text-1); }
+  .quad-cell.active-green { border-color: var(--positive); background: color-mix(in srgb, var(--positive) 16%, transparent); color: var(--text-1); }
+  .quad-cell.active-gray { border-color: var(--text-3); color: var(--text-1); }
+  .quad-cell .here { position: absolute; top: 6px; right: 8px; font-size: 10.5px; font-weight: 700; color: var(--danger); }
+  .quad-cell.active-green .here { color: var(--positive); }
+  .quad-xlab { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-4); padding: 2px 4px 0; letter-spacing: 1px; }
   .quad-meaning { margin-top: 10px; font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
+  .quad-meaning b, .alert b, .headline b, .meaning b, .quad-fed b, .quad-race b { color: var(--text-1); font-weight: 650; }
   .quad-fed { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 12.5px; color: var(--text-2); line-height: 1.7; }
-  .quad-fed b { color: var(--text-1); }
   .quad-race { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 12.5px; color: var(--text-2); line-height: 1.7; }
-  .quad-race b { color: var(--text-1); }
+
+  /* ---------- 板块温度计 / A股 ---------- */
+  .sec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .sec-card { border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; background: var(--surface); }
+  .sec-card .nm { font-size: 12.5px; color: var(--text-2); }
+  .sec-card .val { font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .sec-card .deltas { font-size: 12px; margin-top: 3px; font-variant-numeric: tabular-nums; display: flex; gap: 10px; flex-wrap: wrap; }
+  .sec-card .sub { font-size: 11.5px; color: var(--text-4); margin-top: 4px; line-height: 1.5; }
+  .sec-note { font-size: 12px; color: var(--text-3); margin-top: 8px; line-height: 1.6; }
 
   /* ---------- 指数行 ---------- */
   .indices { display: flex; gap: 26px; flex-wrap: wrap; margin: 16px 0 4px; }
@@ -239,7 +258,10 @@
             <span class="quad-title">利率 × 股票 四象限 · 谁在主导市场</span>
             <span class="quad-now" id="quad-now"></span>
           </div>
-          <div class="quad-grid" id="quad-grid"></div>
+          <div class="quad-axis-lab up">↑ 10Y 收益率上行（紧缩压力）</div>
+          <div class="quad-cells" id="quad-grid"></div>
+          <div class="quad-axis-lab down">↓ 10Y 收益率下行（债券被买）</div>
+          <div class="quad-xlab"><span>← 股票下跌</span><span>股票上涨 →</span></div>
           <div class="quad-meaning" id="quad-meaning"></div>
           <div class="quad-fed" id="quad-fed" hidden></div>
           <div class="quad-race" id="quad-race" hidden></div>
@@ -247,6 +269,18 @@
       </section>
 
       <section class="indices" id="indices"></section>
+
+      <section id="sec-section" hidden>
+        <h2 class="section-title">板块温度计 · 指数掩盖的东西</h2>
+        <div class="sec-grid" id="sectors"></div>
+        <div class="sec-note" id="sec-note" hidden></div>
+      </section>
+
+      <section id="cn-section" hidden>
+        <h2 class="section-title">A股 · 全球 AI 链条的先行指标</h2>
+        <div class="sec-grid" id="cn-market"></div>
+        <div class="sec-note" id="cn-note" hidden></div>
+      </section>
 
       <section id="comp-section" hidden>
         <h2 class="section-title">核心分项 · 0=极度恐惧 100=极度贪婪</h2>
@@ -339,6 +373,18 @@
     if (text != null) e.textContent = text;
     return e;
   }
+  // **重点** → <b>。用于 headline / 警报 / 解读里的信号词加粗。
+  function rich(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    var parts = String(text == null ? "" : text).split(/\*\*(.+?)\*\*/g);
+    for (var i = 0; i < parts.length; i++) {
+      if (!parts[i]) continue;
+      if (i % 2 === 1) e.appendChild(el("b", null, parts[i]));
+      else e.appendChild(document.createTextNode(parts[i]));
+    }
+    return e;
+  }
 
   function renderSentiment(main) {
     if (!main || !main.composite) return;
@@ -352,7 +398,8 @@
     var ll = document.getElementById("light-label");
     ll.textContent = LEVEL_LABEL[st.level] || st.level;
     ll.className = "light-label lv-" + st.level;
-    document.getElementById("headline").textContent = st.headline || c.guidance || "";
+    document.getElementById("headline").innerHTML = "";
+    document.getElementById("headline").appendChild(rich("span", null, st.headline || c.guidance || ""));
 
     var mr = document.getElementById("meta-row");
     function addChip(parts) {
@@ -380,7 +427,7 @@
     } else {
       alerts.forEach(function (a) {
         var row = el("div", "alert lv-" + a.level);
-        row.appendChild(el("span", null, a.text));
+        row.appendChild(rich("span", null, a.text));
         row.appendChild(el("span", "act", a.actionable ? "⚑ 需行动" : "观察"));
         aw.appendChild(row);
         if (a.context && a.context.length) {
@@ -410,23 +457,26 @@
         "（10Y " + q.us10y + "% · 10日 " + (q.yieldChg10d >= 0 ? "+" : "") + q.yieldChg10d + "bp" +
         " × SPX 10日 " + (q.spxChg10d >= 0 ? "+" : "") + q.spxChg10d + "%）"));
       var CELLS = [
-        { key: "rateshock", ql: "利率冲击", txt: "收益率↑ 股↓：折现率杀估值，高估值成长首当其冲" },
-        { key: "growth", ql: "增长乐观", txt: "收益率↑ 股↑：增长叙事压倒利率压力，健康" },
-        { key: "riskoff", ql: "风险偏好崩塌", txt: "收益率↓ 股↓：资金逃进美债避险，最危险读法" },
-        { key: "easing", ql: "宽松顺风", txt: "收益率↓ 股↑：利率压力真解除，修复确认" }
+        { key: "rateshock", ql: "利率冲击", qd: "收益率↑ × 股↓", txt: "折现率杀估值，高估值成长首当其冲" },
+        { key: "growth", ql: "增长乐观", qd: "收益率↑ × 股↑", txt: "增长叙事压倒利率压力，健康" },
+        { key: "riskoff", ql: "风险偏好崩塌", qd: "收益率↓ × 股↓", txt: "资金逃进美债避险，最危险读法" },
+        { key: "easing", ql: "宽松顺风", qd: "收益率↓ × 股↑", txt: "利率压力真解除，修复确认" }
       ];
       var grid = document.getElementById("quad-grid");
-      grid.appendChild(el("div", "quad-ylab", "10Y 收益率 ↑"));
       CELLS.forEach(function (cell) {
-        var cls = "quad-cell";
-        if (q.key === cell.key) cls += " active-" + (q.tone || "gray");
+        var cls = "quad-cell q-" + cell.key;
+        var active = (q.key === cell.key);
+        if (active) cls += " active-" + (q.tone || "gray");
         var cdiv = el("div", cls);
+        if (active) cdiv.appendChild(el("span", "here", "◀ 当前"));
         cdiv.appendChild(el("span", "ql", cell.ql));
+        cdiv.appendChild(el("span", "qd", cell.qd));
         cdiv.appendChild(document.createTextNode(cell.txt));
         grid.appendChild(cdiv);
       });
-      grid.appendChild(el("div", "quad-xlab", "SPX 方向 →"));
-      document.getElementById("quad-meaning").textContent = (q.meaning || "") + (q.guide ? " " + q.guide : "");
+      var qmEl = document.getElementById("quad-meaning");
+      qmEl.innerHTML = "";
+      qmEl.appendChild(rich("span", null, (q.meaning || "") + (q.guide ? " " + q.guide : "")));
       var rf = main.raceFrame || {};
       var fw = main.fedWatch || rf.fed;
       if (fw) {
@@ -440,16 +490,53 @@
           " · 10月加息概率 " + (fw.octHikeProb != null ? fw.octHikeProb + "%" : "--") +
           " · 12月 " + (fw.decHikeProb != null ? fw.decHikeProb + "%" : "--") +
           (fw.updatedAt ? "（" + fw.updatedAt + " 更新）" : "")));
-        if (fw.note) fedEl.appendChild(document.createTextNode(" " + fw.note));
+        if (fw.note) fedEl.appendChild(rich("span", null, " " + fw.note));
       }
       if (rf.aiSide) {
         var aiEl = document.getElementById("quad-race");
         aiEl.hidden = false;
         aiEl.innerHTML = "";
         aiEl.appendChild(el("b", null, "⚔ 利率 vs AI 盈利赛跑 · AI 侧："));
-        aiEl.appendChild(document.createTextNode(rf.aiSide));
+        aiEl.appendChild(rich("span", null, rf.aiSide));
       }
     }
+
+    // ---- 板块温度计 + A股 ----
+    function secCard(wrap, name, value, d1, d20, d60, subText, dateStr) {
+      var box = el("div", "sec-card");
+      box.appendChild(el("div", "nm", name + (dateStr ? " · " + dateStr : "")));
+      box.appendChild(el("div", "val", value));
+      var dd = el("div", "deltas");
+      function chip(lbl, v) {
+        if (v == null) return;
+        var up = v >= 0;
+        dd.appendChild(el("span", "chg " + (up ? "up" : "down"), lbl + " " + (up ? "+" : "") + v + "%"));
+      }
+      chip("日", d1); chip("20日", d20); chip("60日", d60);
+      if (dd.children.length) box.appendChild(dd);
+      if (subText) box.appendChild(el("div", "sub", subText));
+      wrap.appendChild(box);
+    }
+    var sc = main.sectors || {};
+    var scWrap = document.getElementById("sectors");
+    if (sc.sox) secCard(scWrap, "费城半导体 SOX", sc.sox.value != null ? sc.sox.value.toLocaleString("en-US") : "--", null, sc.sox.d20, sc.sox.d60, sc.sox.what, sc.sox.date);
+    if (sc.rut) secCard(scWrap, "罗素2000 小盘股", sc.rut.value != null ? sc.rut.value.toLocaleString("en-US") : "--", null, sc.rut.d20, sc.rut.d60, sc.rut.what, sc.rut.date);
+    if (sc.ndxrel) secCard(scWrap, "科技相对强弱", sc.ndxrel.value, null, sc.ndxrel.d20, null, sc.ndxrel.what, sc.ndxrel.date);
+    document.getElementById("sec-section").hidden = !scWrap.children.length;
+
+    var cm = main.cnMarket || {};
+    var cnWrap = document.getElementById("cn-market");
+    ["sh", "kc50", "cyb", "cnsemi"].forEach(function (k) {
+      var it = cm[k];
+      if (it) secCard(cnWrap, it.name, it.value != null ? it.value.toLocaleString("en-US") : "--", it.d1, it.d20, it.d60, null, it.date);
+    });
+    if (cm.lead) {
+      var cnNote = document.getElementById("cn-note");
+      cnNote.hidden = false;
+      cnNote.innerHTML = "";
+      cnNote.appendChild(rich("span", null, "**科创50 vs SOX 60日相对强弱：" + (cm.lead.kc50VsSox60d >= 0 ? "+" : "") + cm.lead.kc50VsSox60d + "%**。" + cm.lead.note));
+    }
+    document.getElementById("cn-section").hidden = !cnWrap.children.length;
 
     var idxWrap = document.getElementById("indices");
     (main.indices || []).forEach(function (ix) {
@@ -500,7 +587,7 @@
       if (typeof cp.staleDays === "number" && cp.staleDays > 8) {
         card.appendChild(el("div", "stale-warn", "⚠ 人工数据已 " + cp.staleDays + " 天未更新（应每周更新），结论可能已过时"));
       }
-      if (cp.meaning) card.appendChild(el("div", "meaning", cp.meaning));
+      if (cp.meaning) card.appendChild(rich("div", "meaning", cp.meaning));
       if (cp.what || cp.guide) {
         var det = el("details", "what");
         det.appendChild(el("summary", null, "这是什么？怎么看？怎么用？"));
@@ -522,7 +609,7 @@
       box.appendChild(nm);
       box.appendChild(el("div", "big", bigText));
       if (subText) box.appendChild(el("div", "sub2", subText));
-      if (meaning) box.appendChild(el("div", "meaning", meaning));
+      if (meaning) box.appendChild(rich("div", "meaning", meaning));
       if (what || guide) {
         var det = el("details", "what");
         det.appendChild(el("summary", null, "这是什么？怎么看？怎么用？"));
@@ -562,7 +649,7 @@
       box.appendChild(nm);
       box.appendChild(el("div", "big", bigText));
       if (subText) box.appendChild(el("div", "sub2", subText));
-      if (obj.meaning) box.appendChild(el("div", "meaning", obj.meaning));
+      if (obj.meaning) box.appendChild(rich("div", "meaning", obj.meaning));
       if (obj.threshold) box.appendChild(el("div", "meta", obj.threshold));
       if (obj.what || obj.guide) {
         var det = el("details", "what");
