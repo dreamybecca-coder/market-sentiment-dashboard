@@ -1,5 +1,5 @@
 {
- "asOf": "2026-10-20 06:14",
+ "asOf": "2026-10-20 11:24",
  "status": {
   "level": "red",
   "headline": "信用利差 **3.31%**（30日 **+63bp**）：降风险触发区",
@@ -11,16 +11,16 @@
     "text": "信用利差 **3.31%**（30日 **+63bp**）：降风险触发区",
     "context": [
      {
-      "title": "US Stock Futures Bounce After Chip…",
+      "title": "Asian Stocks Shrug Off US Chip Rall…",
       "source": "Bloomberg Markets",
-      "url": "https://www.bloomberg.com/news/articles/2026-10-18/stock-market-today-dow-s-p-live-updates",
+      "url": "https://www.bloomberg.com/news/articles/2026-10-19/stock-market-today-dow-s-p-live-updates",
       "tag": "🟠 报道"
      },
      {
-      "title": "US rate rises are being amplified i…",
-      "source": "Financial Times Economy",
-      "url": "https://www.ft.com/content/cea20e2a-379c-4ea2-af94-353b1896b748",
-      "tag": "🟡 深度分析"
+      "title": "“bonsoir, Elliot”: How abliterated…",
+      "source": "Hacker News Top",
+      "url": "https://projectdiscovery.io/research/how-abliterated-models-can-get-you-pwned",
+      "tag": "🔴 快讯"
      }
     ]
    },
@@ -28,13 +28,13 @@
     "key": "sector_div",
     "level": "yellow",
     "actionable": true,
-    "text": "板块背离：SPX 20日 +0.1% 看似平静，但 **SOX 半导体 20日 -6.6%**——你的敞口在板块侧，指数在骗你"
+    "text": "板块背离：SPX 20日 -0.9% 看似平静，但 **SOX 半导体 20日 -9.0%**——你的敞口在板块侧，指数在骗你"
    },
    {
     "key": "cn_ai_lead",
     "level": "yellow",
     "actionable": false,
-    "text": "A股科创50 60日 **-22.5%**：A股科技 7 月已见顶，历史领先美股 AI 调整——全球 AI 链条的前沿警报"
+    "text": "A股科创50 60日 **-21.8%**：A股科技 7 月已见顶，历史领先美股 AI 调整——全球 AI 链条的前沿警报"
    }
   ],
   "alertCount": 3
@@ -47,7 +47,7 @@
   "groupScores": {
    "信用": 70.0,
    "波动率": 46.72727272727273,
-   "广度": 44.0
+   "广度": 44.48780487804878
   },
   "groupExplains": {
    "信用": {
@@ -159,8 +159,8 @@
    "key": "momentum",
    "name": "SPX 动量（vs 125日线）",
    "group": "广度",
-   "value": "+1.6%",
-   "score": 44,
+   "value": "+1.9%",
+   "score": 45,
    "zone": "中性",
    "delta1d": null,
    "delta1w": null,
@@ -172,7 +172,7 @@
    "source": "FRED SP500（自动）",
    "note": "价格高于均线=动量健康（顺势）",
    "what": "标普 500 现价相对 125 天均线的距离。线上＝中期趋势向上；跌破＝趋势转弱。",
-   "meaning": "现在 +1.6%——贴着均线附近，趋势不明朗。",
+   "meaning": "现在 +1.9%——贴着均线附近，趋势不明朗。",
    "guide": "数据：FRED SP500 每日自动。怎么看：现价在 125 日均线上方＝中期趋势向上。行动规则：它是顺势确认指标，不是反向指标——趋势在就别逆势做空；跌破均线说明顺势资金会开始减仓。"
   }
  ],
@@ -180,10 +180,10 @@
   {
    "symbol": "SPX",
    "name": "标普500",
-   "price": 7659.44,
-   "changePct": -1.09,
-   "vs200d": 5.3,
-   "date": "2026-10-16"
+   "price": 7690.73,
+   "changePct": 0.41,
+   "vs200d": 5.7,
+   "date": "2026-10-19"
   },
   {
    "symbol": "NDX",
@@ -323,10 +323,10 @@
   "label": "风险偏好崩塌",
   "tone": "red",
   "yieldChg10d": -15.0,
-  "spxChg10d": -0.82,
+  "spxChg10d": -1.07,
   "us10y": 5.09,
   "ydate": "2026-10-16",
-  "spxDate": "2026-10-16",
+  "spxDate": "2026-10-19",
   "what": "横轴＝股票方向（SPX 10 日涨跌），纵轴＝利率方向（10Y 美债收益率 10 日变动）。单一指标会骗人——收益率下降可以是好事也可以是坏事——但「利率×股票」的组合不会：四个象限各自对应一种明确的市场主导逻辑。",
   "meaning": "收益率下行 + 股票下跌：**资金在逃进美债避险**——这不是「利率压力解除」，而是**风险偏好崩塌**。",
   "guide": "最容易误读的象限。收益率下降在这里是「果」不是「因」：股跌得越急，债被买得越凶。**此象限中别把债券走强当利好**，盯信用利差和广度是否止跌。 本框架来自 2026-10-19 三轮机构交叉验证（避险流量 vs 配置跷跷板之争的统一解法），验证笔记见 Obsidian 专题研究。"
@@ -356,63 +356,63 @@
  "sectors": {
   "sox": {
    "name": "费城半导体 SOX",
-   "value": 11137.0,
-   "date": "2026-10-16",
-   "d20": -6.58,
-   "d60": -9.77,
+   "value": 11316.0,
+   "date": "2026-10-19",
+   "d20": -8.98,
+   "d60": -4.25,
    "what": "全球半导体景气的一线温度计——你的 AI/科技敞口的真实位置在这里，不在 SPX。"
   },
   "rut": {
    "name": "罗素2000 小盘股",
-   "value": 2721.0,
-   "date": "2026-10-16",
-   "d20": -4.86,
-   "d60": -7.44,
+   "value": 2728.0,
+   "date": "2026-10-19",
+   "d20": -5.11,
+   "d60": -6.88,
    "what": "对利率最敏感的指数。它比 SPX 先跌，是利率冲击是否传导到实体经济的验证器。"
   },
   "ndxrel": {
    "name": "科技相对强弱（NDX−SPX 20日）",
-   "value": "-2.7%",
+   "value": "-1.6%",
    "date": "2026-10-19",
-   "d20": -2.7,
+   "d20": -1.6,
    "what": "纳指100 与标普500 的 20 日涨幅差。负值＝科技股跑输大盘，资金在从科技切向别处。"
   }
  },
  "cnMarket": {
   "kc50": {
    "name": "科创50",
-   "value": 1329.19,
-   "date": "2026-10-19",
-   "d1": -2.17,
-   "d20": -14.43,
-   "d60": -22.51
+   "value": 1344.66,
+   "date": "2026-10-20",
+   "d1": 1.16,
+   "d20": -12.01,
+   "d60": -21.76
   },
   "cyb": {
    "name": "创业板指",
-   "value": 2746.29,
-   "date": "2026-10-19",
-   "d1": -0.94,
-   "d20": -17.33,
-   "d60": -19.9
+   "value": 2759.45,
+   "date": "2026-10-20",
+   "d1": 0.48,
+   "d20": -16.01,
+   "d60": -19.86
   },
   "sh": {
    "name": "上证指数",
-   "value": 3730.92,
-   "date": "2026-10-19",
-   "d1": 0.39,
-   "d20": -4.04,
-   "d60": -0.88
+   "value": 3730.03,
+   "date": "2026-10-20",
+   "d1": -0.02,
+   "d20": -4.0,
+   "d60": -1.75
   },
   "cnsemi": {
    "name": "半导体板块",
-   "value": 2235.05,
-   "date": "2026-10-19",
-   "d1": -0.72,
-   "d20": -13.5,
-   "d60": -16.04
+   "value": 2317.64,
+   "date": "2026-10-20",
+   "d1": 3.7,
+   "d20": -10.73,
+   "d60": -6.76
   },
   "lead": {
-   "kc50VsSox60d": -12.7,
+   "kc50VsSox60d": -17.5,
    "note": "科创50 与 SOX 的 60 日涨幅差。2026 年 A股半导体 7 月见顶，领先本轮美股 AI 调整约 3 个月——A股科技是全球 AI 链条的前沿哨兵。"
   }
  },
@@ -425,7 +425,7 @@
  "errors": [
   "Yahoo %5EVXV（已降级）: 429 Too Many Requests",
   "Yahoo %5EVIX（已降级）: 429 Too Many Requests",
-  "Yahoo %5ENDX（已降级）: yahoo time budget exhausted",
+  "Yahoo %5ENDX（预算耗尽，已降级）",
   "Yahoo SPY（预算耗尽，已降级）",
   "Yahoo TLT（预算耗尽，已降级）",
   "Yahoo RSP（预算耗尽，已降级）"
