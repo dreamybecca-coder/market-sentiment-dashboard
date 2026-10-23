@@ -1,5 +1,5 @@
 {
- "asOf": "2026-10-23 06:14",
+ "asOf": "2026-10-23 15:45",
  "status": {
   "level": "red",
   "headline": "信用利差 **3.27%**（30日 **+56bp**）：降风险触发区",
@@ -11,28 +11,10 @@
     "text": "信用利差 **3.27%**（30日 **+56bp**）：降风险触发区",
     "context": [
      {
-      "title": "ASX to Unveil New Strategy in 2027…",
+      "title": "Korean Stocks Drop on Chip Losses A…",
       "source": "Bloomberg Markets",
-      "url": "https://www.bloomberg.com/news/articles/2026-10-21/asx-to-unveil-new-strategy-in-2027-as-ceo-attia-lays-out-roadmap",
+      "url": "https://www.bloomberg.com/news/articles/2026-10-23/korean-stocks-drop-on-chip-losses-after-us-selloff-oil-gains",
       "tag": "🟠 报道"
-     },
-     {
-      "title": "China Stock Rescue May Need More St…",
-      "source": "Bloomberg Markets",
-      "url": "https://www.bloomberg.com/news/articles/2026-10-22/china-stock-rescue-may-need-more-state-buying-to-work-bi-says",
-      "tag": "🟠 报道"
-     },
-     {
-      "title": "The Unloved 20-Year Treasury Bond S…",
-      "source": "Wolf Street",
-      "url": "https://wolfstreet.com/2026/10/21/the-unloved-20-year-treasury-bond-sells-at-5-47-highest-auction-yield-since-1985/",
-      "tag": "🟡 深度分析"
-     },
-     {
-      "title": "Apollo Debt Solutions BDC — 8-K: 8…",
-      "source": "SEC EDGAR 重大公告",
-      "url": "https://www.sec.gov/Archives/edgar/data/1837532/000119312526427340/d164012d8k.htm",
-      "tag": "📋 官方公告"
      }
     ]
    },
@@ -40,13 +22,13 @@
     "key": "sector_div",
     "level": "yellow",
     "actionable": true,
-    "text": "板块背离：SPX 20日 +0.7% 看似平静，但 **SOX 半导体 20日 -8.2%**——你的敞口在板块侧，指数在骗你"
+    "text": "板块背离：SPX 20日 +0.7% 看似平静，但 **SOX 半导体 20日 -14.1%**——你的敞口在板块侧，指数在骗你"
    },
    {
     "key": "cn_ai_lead",
     "level": "yellow",
     "actionable": false,
-    "text": "A股科创50 60日 **-29.8%**：A股科技 7 月已见顶，历史领先美股 AI 调整——全球 AI 链条的前沿警报"
+    "text": "A股科创50 60日 **-24.8%**：A股科技 7 月已见顶，历史领先美股 AI 调整——全球 AI 链条的前沿警报"
    }
   ],
   "alertCount": 3
@@ -200,9 +182,9 @@
   {
    "symbol": "NDX",
    "name": "纳指综合（NDX 降级）",
-   "price": 26702.86,
-   "changePct": 1.05,
-   "date": "2026-10-21"
+   "price": 26008.86,
+   "changePct": -2.6,
+   "date": "2026-10-22"
   },
   {
    "symbol": "VIX",
@@ -375,18 +357,18 @@
  "sectors": {
   "sox": {
    "name": "费城半导体 SOX",
-   "value": 11506.0,
-   "date": "2026-10-21",
-   "d20": -8.21,
-   "d60": 4.26,
+   "value": 10732.0,
+   "date": "2026-10-22",
+   "d20": -14.09,
+   "d60": 2.72,
    "what": "全球半导体景气的一线温度计——你的 AI/科技敞口的真实位置在这里，不在 SPX。"
   },
   "rut": {
    "name": "罗素2000 小盘股",
-   "value": 2781.0,
-   "date": "2026-10-21",
-   "d20": -2.03,
-   "d60": -5.85,
+   "value": 2784.0,
+   "date": "2026-10-22",
+   "d20": -1.82,
+   "d60": -4.21,
    "what": "对利率最敏感的指数。它比 SPX 先跌，是利率冲击是否传导到实体经济的验证器。"
   },
   "ndxrel": {
@@ -400,38 +382,38 @@
  "cnMarket": {
   "kc50": {
    "name": "科创50",
-   "value": 1305.87,
-   "date": "2026-10-22",
-   "d1": -2.78,
-   "d20": -19.2,
-   "d60": -29.79
+   "value": 1345.51,
+   "date": "2026-10-23",
+   "d1": 3.04,
+   "d20": -16.23,
+   "d60": -24.82
   },
   "cyb": {
    "name": "创业板指",
-   "value": 2576.9,
-   "date": "2026-10-22",
-   "d1": -4.37,
-   "d20": -22.18,
-   "d60": -27.75
+   "value": 2684.1,
+   "date": "2026-10-23",
+   "d1": 4.16,
+   "d20": -18.62,
+   "d60": -24.93
   },
   "sh": {
    "name": "上证指数",
-   "value": 3658.03,
-   "date": "2026-10-22",
-   "d1": -1.48,
-   "d20": -6.0,
-   "d60": -5.4
+   "value": 3690.48,
+   "date": "2026-10-23",
+   "d1": 0.89,
+   "d20": -4.78,
+   "d60": -4.81
   },
   "cnsemi": {
    "name": "半导体板块",
-   "value": 2230.47,
-   "date": "2026-10-22",
-   "d1": -3.11,
-   "d20": -19.13,
-   "d60": -17.58
+   "value": 2312.92,
+   "date": "2026-10-23",
+   "d1": 3.7,
+   "d20": -15.9,
+   "d60": -11.65
   },
   "lead": {
-   "kc50VsSox60d": -34.0,
+   "kc50VsSox60d": -27.5,
    "note": "科创50 与 SOX 的 60 日涨幅差。2026 年 A股半导体 7 月见顶，领先本轮美股 AI 调整约 3 个月——A股科技是全球 AI 链条的前沿哨兵。"
   }
  },
@@ -443,8 +425,7 @@
  },
  "errors": [
   "Yahoo %5EVXV（已降级）: 429 Too Many Requests",
-  "Yahoo %5EVIX（已降级）: 429 Too Many Requests",
-  "Yahoo %5ENDX（已降级）: yahoo time budget exhausted",
+  "Yahoo %5ENDX（已降级）: 429 Too Many Requests",
   "Yahoo SPY（预算耗尽，已降级）",
   "Yahoo TLT（预算耗尽，已降级）",
   "Yahoo RSP（预算耗尽，已降级）"
