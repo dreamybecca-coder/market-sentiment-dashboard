@@ -1,5 +1,5 @@
 {
- "asOf": "2026-10-25 06:13",
+ "asOf": "2026-10-25 15:45",
  "status": {
   "level": "red",
   "headline": "信用利差 **3.40%**（30日 **+70bp**）：降风险触发区",
@@ -8,7 +8,21 @@
     "key": "hy_red",
     "level": "red",
     "actionable": true,
-    "text": "信用利差 **3.40%**（30日 **+70bp**）：降风险触发区"
+    "text": "信用利差 **3.40%**（30日 **+70bp**）：降风险触发区",
+    "context": [
+     {
+      "title": "Treasury Market Gets to Breathe: AI…",
+      "source": "Wolf Street",
+      "url": "https://wolfstreet.com/2026/10/24/treasury-market-gets-to-breathe-ai-companies-front-loaded-debt-sales-and-now-loaded-with-massive-cash-to-spend-step-back-from-the-bond-market/",
+      "tag": "🟡 深度分析"
+     },
+     {
+      "title": "VYMI: High Yield, Strong Dividend G…",
+      "source": "Seeking Alpha",
+      "url": "https://seekingalpha.com/article/4957275-vymi-high-yield-strong-dividend-growth-and-now-a-buy?source=feed_all_articles",
+      "tag": "🟡 深度分析"
+     }
+    ]
    },
    {
     "key": "sector_div",
