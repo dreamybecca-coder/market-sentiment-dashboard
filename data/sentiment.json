@@ -1,5 +1,5 @@
 {
- "asOf": "2026-10-27 15:45",
+ "asOf": "2026-10-27 22:35",
  "status": {
   "level": "red",
   "headline": "信用利差 **3.38%**（30日 **+73bp**）：降风险触发区",
@@ -26,7 +26,7 @@
   "confidence": 88.0,
   "groupScores": {
    "信用": 68.0,
-   "波动率": 47.45454545454545,
+   "波动率": 50.18181818181818,
    "广度": 45.09756097560975
   },
   "groupExplains": {
@@ -77,12 +77,12 @@
    "key": "volatility",
    "name": "VIX 波动率",
    "group": "波动率",
-   "value": "19.4",
-   "score": 57,
-   "zone": "中性",
-   "delta1d": "+2.2%",
-   "delta1w": "-2.7%/周",
-   "percentile1y": 78.8,
+   "value": "18.4",
+   "score": 61,
+   "zone": "贪婪",
+   "delta1d": "-5.5%",
+   "delta1w": "-0.3%/周",
+   "percentile1y": 67.7,
    "percentile5y": null,
    "threshold": "分位>90% 恐慌 · <10% 自满",
    "weight": 15,
@@ -90,7 +90,7 @@
    "source": "FRED VIXCLS（自动）",
    "note": "0DTE 时代需与 PCR 交叉验证",
    "what": "市场愿意为期权「保险」付的价格。数字越高＝越多人抢着买保护（恐慌）；越低＝没人买保护（自满）。",
-   "meaning": "现在 19.4，处于近 1 年 79% 分位——正常区间，没有极端情绪。",
+   "meaning": "现在 18.4，处于近 1 年 68% 分位——正常区间，没有极端情绪。",
    "guide": "数据：FRED VIXCLS 每日自动（前一交易日收盘）。怎么看：只看一年分位、不看绝对值——VIX 中枢会随市场结构漂移。行动规则：分位 >90%＝恐慌区，历史上是买点不是卖点；<10%＝自满区，是想对冲的人买保险最便宜的时候。局限：0DTE 期权普及后 VIX 被结构性压低，必须和 PCR、期限结构交叉验证。"
   },
   {
@@ -175,9 +175,9 @@
   {
    "symbol": "VIX",
    "name": "波动率指数",
-   "price": 19.45,
-   "changePct": 2.21,
-   "date": "2026-10-23"
+   "price": 18.39,
+   "changePct": -5.45,
+   "date": "2026-10-26"
   }
  ],
  "portfolio": {
@@ -364,9 +364,9 @@
   },
   "ndxrel": {
    "name": "科技相对强弱（NDX−SPX 20日）",
-   "value": "-0.9%",
-   "date": "2026-10-26",
-   "d20": -0.9,
+   "value": "-0.1%",
+   "date": "2026-10-27",
+   "d20": -0.1,
    "what": "纳指100 与标普500 的 20 日涨幅差。负值＝科技股跑输大盘，资金在从科技切向别处。"
   }
  },
@@ -417,7 +417,7 @@
  "errors": [
   "Yahoo %5EVXV（已降级）: 429 Too Many Requests",
   "Yahoo %5EVIX（已降级）: 429 Too Many Requests",
-  "Yahoo %5ENDX（已降级）: yahoo time budget exhausted",
+  "Yahoo %5ENDX（预算耗尽，已降级）",
   "Yahoo SPY（预算耗尽，已降级）",
   "Yahoo TLT（预算耗尽，已降级）",
   "Yahoo RSP（预算耗尽，已降级）"
