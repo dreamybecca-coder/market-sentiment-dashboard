@@ -1,5 +1,5 @@
 {
- "asOf": "2026-11-02 15:45",
+ "asOf": "2026-11-02 22:35",
  "status": {
   "level": "red",
   "headline": "信用利差 **3.26%**（30日 **+56bp**）：降风险触发区",
@@ -368,9 +368,9 @@
   },
   "ndxrel": {
    "name": "科技相对强弱（NDX−SPX 20日）",
-   "value": "-7.7%",
-   "date": "2026-10-30",
-   "d20": -7.7,
+   "value": "-8.0%",
+   "date": "2026-11-02",
+   "d20": -8.0,
    "what": "纳指100 与标普500 的 20 日涨幅差。负值＝科技股跑输大盘，资金在从科技切向别处。"
   }
  },
@@ -421,7 +421,7 @@
  "errors": [
   "Yahoo %5EVXV（已降级）: 429 Too Many Requests",
   "Yahoo %5EVIX（已降级）: 429 Too Many Requests",
-  "Yahoo %5ENDX（已降级）: yahoo time budget exhausted",
+  "Yahoo %5ENDX（预算耗尽，已降级）",
   "Yahoo SPY（预算耗尽，已降级）",
   "Yahoo TLT（预算耗尽，已降级）",
   "Yahoo RSP（预算耗尽，已降级）"
