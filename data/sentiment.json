@@ -1,5 +1,5 @@
 {
- "asOf": "2026-11-05 06:14",
+ "asOf": "2026-11-05 15:45",
  "status": {
   "level": "red",
   "headline": "信用利差 **3.40%**（30日 **+72bp**）：降风险触发区",
@@ -11,9 +11,21 @@
     "text": "信用利差 **3.40%**（30日 **+72bp**）：降风险触发区",
     "context": [
      {
-      "title": "Heat returns to US labour market in…",
+      "title": "Philippine October Inflation Accele…",
+      "source": "Bloomberg Markets",
+      "url": "https://www.bloomberg.com/news/articles/2026-11-05/philippine-october-inflation-accelerates-7-8-close-to-four-year-high",
+      "tag": "🟠 报道"
+     },
+     {
+      "title": "Despite Lower Rates, Demand for Mor…",
+      "source": "Wolf Street",
+      "url": "https://wolfstreet.com/2026/11/04/despite-lower-mortgage-rates-demand-for-mortgages-to-purchase-a-home-dips-clings-to-rock-bottom-7-the-no-go-zone/",
+      "tag": "📊 研究报告"
+     },
+     {
+      "title": "October inflation in the Eurozone k…",
       "source": "Financial Times Economy",
-      "url": "https://www.ft.com/content/44e578ac-e2e5-43b4-946d-06ebb82d27e6",
+      "url": "https://www.ft.com/content/a3da6c3a-4ab3-413c-bbeb-490d7cde34dc",
       "tag": "🟡 深度分析"
      }
     ]
@@ -22,7 +34,7 @@
     "key": "cn_ai_lead",
     "level": "yellow",
     "actionable": false,
-    "text": "A股科创50 60日 **-21.7%**：A股科技 7 月已见顶，历史领先美股 AI 调整——全球 AI 链条的前沿警报"
+    "text": "A股科创50 60日 **-24.0%**：A股科技 7 月已见顶，历史领先美股 AI 调整——全球 AI 链条的前沿警报"
    }
   ],
   "alertCount": 2
@@ -176,9 +188,9 @@
   {
    "symbol": "NDX",
    "name": "纳指综合（NDX 降级）",
-   "price": 25372.01,
-   "changePct": 0.83,
-   "date": "2026-11-03"
+   "price": 25736.51,
+   "changePct": 1.44,
+   "date": "2026-11-04"
   },
   {
    "symbol": "VIX",
@@ -346,18 +358,18 @@
  "sectors": {
   "sox": {
    "name": "费城半导体 SOX",
-   "value": 10600.0,
-   "date": "2026-11-03",
-   "d20": -19.8,
-   "d60": -11.62,
+   "value": 10269.0,
+   "date": "2026-11-04",
+   "d20": -21.41,
+   "d60": -15.12,
    "what": "全球半导体景气的一线温度计——你的 AI/科技敞口的真实位置在这里，不在 SPX。"
   },
   "rut": {
    "name": "罗素2000 小盘股",
-   "value": 2812.0,
-   "date": "2026-11-03",
-   "d20": -0.63,
-   "d60": -6.79,
+   "value": 2857.0,
+   "date": "2026-11-04",
+   "d20": 2.28,
+   "d60": -5.62,
    "what": "对利率最敏感的指数。它比 SPX 先跌，是利率冲击是否传导到实体经济的验证器。"
   },
   "ndxrel": {
@@ -371,38 +383,38 @@
  "cnMarket": {
   "kc50": {
    "name": "科创50",
-   "value": 1265.47,
-   "date": "2026-11-04",
-   "d1": 9.92,
-   "d20": -17.29,
-   "d60": -21.71
+   "value": 1286.68,
+   "date": "2026-11-05",
+   "d1": 1.68,
+   "d20": -11.65,
+   "d60": -24.03
   },
   "cyb": {
    "name": "创业板指",
-   "value": 2544.73,
-   "date": "2026-11-04",
-   "d1": 6.4,
-   "d20": -18.84,
-   "d60": -27.06
+   "value": 2566.8,
+   "date": "2026-11-05",
+   "d1": 0.87,
+   "d20": -15.47,
+   "d60": -27.39
   },
   "sh": {
    "name": "上证指数",
-   "value": 3686.17,
-   "date": "2026-11-04",
-   "d1": 2.16,
-   "d20": -4.06,
-   "d60": -3.56
+   "value": 3689.91,
+   "date": "2026-11-05",
+   "d1": 0.1,
+   "d20": -3.2,
+   "d60": -4.86
   },
   "cnsemi": {
    "name": "半导体板块",
-   "value": 2145.71,
-   "date": "2026-11-04",
-   "d1": 10.64,
-   "d20": -19.45,
-   "d60": -13.12
+   "value": 2205.33,
+   "date": "2026-11-05",
+   "d1": 2.78,
+   "d20": -12.89,
+   "d60": -15.54
   },
   "lead": {
-   "kc50VsSox60d": -10.1,
+   "kc50VsSox60d": -8.9,
    "note": "科创50 与 SOX 的 60 日涨幅差。2026 年 A股半导体 7 月见顶，领先本轮美股 AI 调整约 3 个月——A股科技是全球 AI 链条的前沿哨兵。"
   }
  },
