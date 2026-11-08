@@ -195,6 +195,18 @@
   .gv-val { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13.5px; text-align: right; }
   .gv-sub { grid-column: 2 / 4; font-size: 11.5px; color: var(--text-3); }
   .gv-chg { font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .gv-mech { grid-column: 2 / 4; font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .gv-arrow { font-weight: 700; }
+  .gv-arrow.fav { color: var(--positive); }
+  .gv-arrow.adv { color: var(--danger); }
+  .gv-arrow.mid { color: var(--text-4); }
+  .gv-impact { font-weight: 600; font-size: 12px; }
+  .gv-impact.fav { color: var(--positive); }
+  .gv-impact.adv { color: var(--danger); }
+  .gv-impact.mid { color: var(--text-3); }
+  .chain-label { font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--text-3); margin: 12px 0 2px; display: flex; align-items: center; gap: 8px; }
+  .chain-label::after { content: ""; flex: 1; border-top: 1px solid var(--border); }
+  .gold-concl { margin-top: 12px; padding: 9px 12px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 8%, transparent); font-size: 13px; line-height: 1.6; }
   .score-wrap { margin-top: 14px; }
   .score-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
   .score-num { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -305,7 +317,7 @@
       </section>
 
       <section id="gold-section" hidden>
-        <h2 class="section-title">黄金 · 定价三变量（实际利率 &gt; 美元 &gt; 结构盘）</h2>
+        <h2 class="section-title">黄金 · 因果链（因：谁在驱动 → 果：趋势确认）</h2>
         <div class="pf-grid" id="gold"></div>
       </section>
 
@@ -613,46 +625,70 @@
         gbox.appendChild(el("div", "gv-chg", "实线＝金价 · 虚线＝20 日均线 · 近 120 个交易日"));
       }
 
-      // 三变量行：点（绿=有利 红=不利 灰=中性）+ 名称 + 数值 + 变化 + 一句判断
-      if (gd.vars && gd.vars.length) {
-        var rows = el("div", "gv-rows");
-        gd.vars.forEach(function (v) {
-          var row = el("div", "gv-row");
-          row.appendChild(el("span", "gv-dot " + (v.dir || "mid")));
-          var nm2 = el("div", "gv-name");
-          nm2.appendChild(el("b", null, v.name));
-          row.appendChild(nm2);
-          var valBox = el("div", "gv-val");
-          valBox.appendChild(document.createTextNode(v.value + "  "));
-          valBox.appendChild(el("span", "gv-chg", v.chg));
-          row.appendChild(valBox);
+      // 因果链：因（三驱动）→ 合成（环境评分）→ 果（动量确认）→ 结论
+      function chainRow(v) {
+        var row = el("div", "gv-row");
+        row.appendChild(el("span", "gv-dot " + (v.dir || "mid")));
+        var nm2 = el("div", "gv-name");
+        nm2.appendChild(el("b", null, v.name));
+        row.appendChild(nm2);
+        var valBox = el("div", "gv-val");
+        valBox.appendChild(document.createTextNode(v.value + "  "));
+        valBox.appendChild(el("span", "gv-chg", v.chg));
+        row.appendChild(valBox);
+        row.appendChild(el("span"));
+        var mech = el("div", "gv-mech");
+        mech.appendChild(document.createTextNode(v.mech || ""));
+        mech.appendChild(el("span", "gv-arrow " + (v.dir || "mid"), " ⟶ "));
+        mech.appendChild(el("span", "gv-impact " + (v.dir || "mid"), v.impact || ""));
+        row.appendChild(mech);
+        if (v.note) {
           row.appendChild(el("span"));
           row.appendChild(el("div", "gv-sub", v.note));
-          rows.appendChild(row);
-        });
+        }
+        return row;
+      }
+      if (gd.vars && gd.vars.length) {
+        gbox.appendChild(el("div", "chain-label", "因 · 谁在驱动金价"));
+        var rows = el("div", "gv-rows");
+        gd.vars.forEach(function (v) { rows.appendChild(chainRow(v)); });
         gbox.appendChild(rows);
       }
 
       // 环境评分条（0=偏空 100=偏多）
-      if (gd.score != null) {
+      if (gd.envScore != null) {
+        gbox.appendChild(el("div", "chain-label", "合成 · 环境评分（实际利率 70% + 美元 30%）"));
         var sw = el("div", "score-wrap");
+        sw.style.marginTop = "4px";
         var st = el("div", "score-top");
-        st.appendChild(el("span", "score-num", gd.score + " / 100"));
-        st.appendChild(el("span", "gv-chg", gd.verdict || ""));
+        st.appendChild(el("span", "score-num", gd.envScore + " / 100"));
+        st.appendChild(el("span", "gv-chg", gd.envScore >= 65 ? "偏多" : (gd.envScore < 35 ? "偏空" : "中性")));
         sw.appendChild(st);
         var bar = el("div", "score-bar");
         var mk = el("div", "score-marker");
-        mk.style.left = Math.max(2, Math.min(98, gd.score)) + "%";
+        mk.style.left = Math.max(2, Math.min(98, gd.envScore)) + "%";
         bar.appendChild(mk);
         sw.appendChild(bar);
         var ends = el("div", "score-ends");
-        ends.appendChild(el("span", null, "0 偏空（三变量都不利）"));
-        ends.appendChild(el("span", null, "100 偏多（三变量齐有利）"));
+        ends.appendChild(el("span", null, "0 双杀"));
+        ends.appendChild(el("span", null, "100 双引擎"));
         sw.appendChild(ends);
         gbox.appendChild(sw);
       }
 
-      if (gd.meaning) gbox.appendChild(rich("div", "meaning", gd.meaning));
+      // 果：动量确认
+      if (gd.momentum) {
+        gbox.appendChild(el("div", "chain-label", "果 · 趋势是否确认"));
+        var mrows = el("div", "gv-rows");
+        mrows.appendChild(chainRow(gd.momentum));
+        gbox.appendChild(mrows);
+      }
+
+      if (gd.meaning) {
+        var concl = el("div", "gold-concl");
+        concl.appendChild(rich("span", null, gd.meaning));
+        gbox.appendChild(concl);
+      }
       if (gd.what || gd.guide) {
         var gdet = el("details", "what");
         gdet.appendChild(el("summary", null, "这是什么？怎么看？怎么用？"));
