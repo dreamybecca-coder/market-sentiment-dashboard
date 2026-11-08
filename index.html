@@ -302,6 +302,11 @@
         </div>
       </section>
 
+      <section id="credit-section" hidden>
+        <h2 class="section-title">信用链 · 管道（因）→ 传导 → 末端定价 → 股市（果）</h2>
+        <div class="pf-grid" id="credit-chain"></div>
+      </section>
+
       <section class="indices" id="indices"></section>
 
       <section id="sec-section" hidden>
@@ -699,6 +704,84 @@
       gdWrap.appendChild(gbox);
     }
     document.getElementById("gold-section").hidden = !gdWrap.children.length;
+
+    // ---- P2 信用链（复用黄金因果链的展示结构） ----
+    var cc = main.creditChain || {};
+    var ccWrap = document.getElementById("credit-chain");
+    function ccRow(v) {
+      var row = el("div", "gv-row");
+      row.appendChild(el("span", "gv-dot " + (v.dir || "mid")));
+      var nm2 = el("div", "gv-name");
+      nm2.appendChild(el("b", null, v.name));
+      row.appendChild(nm2);
+      var valBox = el("div", "gv-val");
+      valBox.appendChild(document.createTextNode(v.value + "  "));
+      valBox.appendChild(el("span", "gv-chg", v.chg));
+      row.appendChild(valBox);
+      row.appendChild(el("span"));
+      var mech = el("div", "gv-mech");
+      mech.appendChild(document.createTextNode(v.mech || ""));
+      mech.appendChild(el("span", "gv-arrow " + (v.dir || "mid"), " ⟶ "));
+      mech.appendChild(el("span", "gv-impact " + (v.dir || "mid"), v.impact || ""));
+      row.appendChild(mech);
+      if (v.note) {
+        row.appendChild(el("span"));
+        row.appendChild(el("div", "gv-sub", v.note));
+      }
+      return row;
+    }
+    if (cc.envScore != null || (cc.rows || []).length) {
+      var cbox = el("div", "card pf-card");
+      var cnm = el("div", "nm");
+      cnm.appendChild(el("span", null, "信用环境"));
+      cnm.appendChild(el("span", "badge st-" + (cc.status || "neutral"), cc.verdict || "中性"));
+      cbox.appendChild(cnm);
+      cbox.appendChild(el("div", "big", cc.envScore != null ? cc.envScore + " / 100" : "--"));
+      cbox.appendChild(el("div", "sub2", "权重：管道 30% · IG 传导 30% · HY 末端定价 40%"));
+      if (cc.rows && cc.rows.length) {
+        cbox.appendChild(el("div", "chain-label", "因 → 传导 · 压力走到哪一层了"));
+        var crows = el("div", "gv-rows");
+        cc.rows.forEach(function (v) { crows.appendChild(ccRow(v)); });
+        cbox.appendChild(crows);
+      }
+      if (cc.envScore != null) {
+        var csw = el("div", "score-wrap");
+        var cst = el("div", "score-top");
+        cst.appendChild(el("span", "score-num", cc.envScore + " / 100"));
+        cst.appendChild(el("span", "gv-chg", cc.verdict || ""));
+        csw.appendChild(cst);
+        var cbar = el("div", "score-bar");
+        var cmk = el("div", "score-marker");
+        cmk.style.left = Math.max(2, Math.min(98, cc.envScore)) + "%";
+        cbar.appendChild(cmk);
+        csw.appendChild(cbar);
+        var cends = el("div", "score-ends");
+        cends.appendChild(el("span", null, "0 系统性事件"));
+        cends.appendChild(el("span", null, "100 平静"));
+        csw.appendChild(cends);
+        cbox.appendChild(csw);
+      }
+      if (cc.equity) {
+        cbox.appendChild(el("div", "chain-label", "果 · 股市是否已传导"));
+        var erows = el("div", "gv-rows");
+        erows.appendChild(ccRow(cc.equity));
+        cbox.appendChild(erows);
+      }
+      if (cc.meaning) {
+        var cconcl = el("div", "gold-concl");
+        cconcl.appendChild(rich("span", null, cc.meaning));
+        cbox.appendChild(cconcl);
+      }
+      if (cc.what || cc.guide) {
+        var cdet = el("details", "what");
+        cdet.appendChild(el("summary", null, "这是什么？怎么看？怎么用？"));
+        if (cc.what) cdet.appendChild(el("div", "what-body", cc.what));
+        if (cc.guide) cdet.appendChild(el("div", "what-body", cc.guide));
+        cbox.appendChild(cdet);
+      }
+      ccWrap.appendChild(cbox);
+    }
+    document.getElementById("credit-section").hidden = !ccWrap.children.length;
 
     var idxWrap = document.getElementById("indices");
     (main.indices || []).forEach(function (ix) {
