@@ -874,8 +874,8 @@
   }
 
   Promise.allSettled([
-    fetch("data/sentiment.json").then(function (r) { return r.json(); }),
-    fetch("data/brief.json").then(function (r) { return r.json(); })
+    fetch("data/sentiment.json", { cache: "no-store" }).then(function (r) { return r.json(); }),
+    fetch("data/brief.json", { cache: "no-store" }).then(function (r) { return r.json(); })
   ]).then(function (results) {
     document.getElementById("loading").hidden = true;
     if (results[0].status === "fulfilled") renderSentiment(results[0].value);
