@@ -181,6 +181,26 @@
   .badge.st-neutral { color: var(--text-3); border: 1px solid var(--border); }
   .badge.st-red { color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent); background: color-mix(in srgb, var(--danger) 8%, transparent); }
   .badge.st-yellow { color: var(--warn, #b8860b); border: 1px solid color-mix(in srgb, var(--warn, #b8860b) 45%, transparent); }
+  /* 黄金模块 */
+  .gold-spark { width: 100%; height: 76px; margin: 8px 0 2px; display: block; }
+  .gv-rows { margin-top: 8px; border-top: 1px solid var(--border); }
+  .gv-row { display: grid; grid-template-columns: 14px minmax(0,1fr) auto; gap: 4px 8px; padding: 7px 0; border-bottom: 1px dashed color-mix(in srgb, var(--border) 60%, transparent); align-items: center; }
+  .gv-row:last-child { border-bottom: none; }
+  .gv-dot { width: 8px; height: 8px; border-radius: 50%; justify-self: center; }
+  .gv-dot.fav { background: var(--positive); box-shadow: 0 0 0 3px color-mix(in srgb, var(--positive) 18%, transparent); }
+  .gv-dot.adv { background: var(--danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent); }
+  .gv-dot.mid { background: var(--text-4); }
+  .gv-name { font-size: 12.5px; color: var(--text-2); }
+  .gv-name b { color: var(--text-1); font-weight: 600; }
+  .gv-val { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13.5px; text-align: right; }
+  .gv-sub { grid-column: 2 / 4; font-size: 11.5px; color: var(--text-3); }
+  .gv-chg { font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .score-wrap { margin-top: 14px; }
+  .score-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .score-num { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .score-bar { position: relative; height: 8px; border-radius: 4px; background: linear-gradient(90deg, color-mix(in srgb, var(--danger) 35%, transparent), color-mix(in srgb, var(--border) 70%, transparent), color-mix(in srgb, var(--positive) 35%, transparent)); }
+  .score-marker { position: absolute; top: -4px; width: 3px; height: 16px; background: var(--text-1); border-radius: 2px; transform: translateX(-50%); }
+  .score-ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); margin-top: 5px; }
   .pf-card .nm { font-size: 12.5px; color: var(--text-3); display: flex; justify-content: space-between; gap: 8px; }
   .pf-card .big { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 3px; }
   .pf-card .sub2 { font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; margin-top: 3px; }
@@ -365,7 +385,7 @@
 (function () {
   "use strict";
   var LEVEL_LABEL = { green: "绿灯 · 持有", yellow: "黄灯 · 警惕", red: "红灯 · 降风险" };
-  var ST_LABEL = { tailwind: "顺风", neutral: "中性", headwind: "逆风", red: "应激", yellow: "关注" };
+  var ST_LABEL = { tailwind: "有利", neutral: "中性", headwind: "不利", red: "应激", yellow: "关注" };
 
   function zoneClass(zone) {
     if (zone === "极度恐惧") return "z-extreme-fear";
@@ -557,14 +577,81 @@
       var gbox = el("div", "card pf-card");
       var gnm = el("div", "nm");
       gnm.appendChild(el("span", null, "COMEX 黄金"));
-      gnm.appendChild(el("span", "badge st-" + (gd.status || "neutral"), ST_LABEL[gd.status] || "中性"));
+      gnm.appendChild(el("span", "badge st-" + (gd.status || "neutral"),
+        (gd.verdict || ST_LABEL[gd.status] || "中性")));
       gbox.appendChild(gnm);
       gbox.appendChild(el("div", "big", gd.price != null ? "$" + gd.price.toLocaleString("en-US") : "--"));
       var gsub = [];
       if (gd.chg1d != null) gsub.push("日变动 " + (gd.chg1d >= 0 ? "+" : "") + gd.chg1d + "%");
-      if (gd.realRate10) gsub.push("10Y 实际利率 " + gd.realRate10.value + "%（20日 " + (gd.realRate10.chg20bp >= 0 ? "+" : "") + gd.realRate10.chg20bp + "bp）");
-      if (gd.dxyBroad) gsub.push("广义美元 " + gd.dxyBroad.value + "（20日 " + (gd.dxyBroad.chg20 >= 0 ? "+" : "") + gd.dxyBroad.chg20 + "%）");
-      gbox.appendChild(el("div", "sub2", gsub.join(" · ")));
+      if (gd.ma20) gsub.push("20日均线 " + gd.ma20.toLocaleString("en-US"));
+      if (gsub.length) gbox.appendChild(el("div", "sub2", gsub.join(" · ")));
+
+      // 走势图：120 日价格线 + 20 日均线 + 当前点
+      if (gd.history && gd.history.length > 20) {
+        var hv = gd.history.map(function (p) { return p[1]; });
+        var maSeries = hv.map(function (_, i) {
+          if (i < 19) return null;
+          var s = 0; for (var j = i - 19; j <= i; j++) s += hv[j];
+          return s / 20;
+        });
+        var W = 560, H = 76, pad = 4;
+        var lo = Math.min.apply(null, hv), hi = Math.max.apply(null, hv);
+        var X = function (i) { return pad + i * (W - 2 * pad) / (hv.length - 1); };
+        var Y = function (v) { return H - pad - (v - lo) / (hi - lo) * (H - 2 * pad); };
+        var pts = hv.map(function (v, i) { return X(i).toFixed(1) + "," + Y(v).toFixed(1); }).join(" ");
+        var maPts = maSeries.map(function (v, i) { return v == null ? null : X(i).toFixed(1) + "," + Y(v).toFixed(1); })
+          .filter(Boolean).join(" ");
+        var lastX = X(hv.length - 1), lastY = Y(hv[hv.length - 1]);
+        var svg = '<svg class="gold-spark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">'
+          + '<polyline points="' + pts + '" fill="none" stroke="var(--accent)" stroke-width="1.6"/>'
+          + '<polyline points="' + maPts + '" fill="none" stroke="var(--text-4)" stroke-width="1" stroke-dasharray="4 3"/>'
+          + '<circle cx="' + lastX + '" cy="' + lastY + '" r="3.2" fill="var(--accent)"/>'
+          + '</svg>';
+        var sparkBox = el("div");
+        sparkBox.innerHTML = svg;
+        gbox.appendChild(sparkBox);
+        gbox.appendChild(el("div", "gv-chg", "实线＝金价 · 虚线＝20 日均线 · 近 120 个交易日"));
+      }
+
+      // 三变量行：点（绿=有利 红=不利 灰=中性）+ 名称 + 数值 + 变化 + 一句判断
+      if (gd.vars && gd.vars.length) {
+        var rows = el("div", "gv-rows");
+        gd.vars.forEach(function (v) {
+          var row = el("div", "gv-row");
+          row.appendChild(el("span", "gv-dot " + (v.dir || "mid")));
+          var nm2 = el("div", "gv-name");
+          nm2.appendChild(el("b", null, v.name));
+          row.appendChild(nm2);
+          var valBox = el("div", "gv-val");
+          valBox.appendChild(document.createTextNode(v.value + "  "));
+          valBox.appendChild(el("span", "gv-chg", v.chg));
+          row.appendChild(valBox);
+          row.appendChild(el("span"));
+          row.appendChild(el("div", "gv-sub", v.note));
+          rows.appendChild(row);
+        });
+        gbox.appendChild(rows);
+      }
+
+      // 环境评分条（0=偏空 100=偏多）
+      if (gd.score != null) {
+        var sw = el("div", "score-wrap");
+        var st = el("div", "score-top");
+        st.appendChild(el("span", "score-num", gd.score + " / 100"));
+        st.appendChild(el("span", "gv-chg", gd.verdict || ""));
+        sw.appendChild(st);
+        var bar = el("div", "score-bar");
+        var mk = el("div", "score-marker");
+        mk.style.left = Math.max(2, Math.min(98, gd.score)) + "%";
+        bar.appendChild(mk);
+        sw.appendChild(bar);
+        var ends = el("div", "score-ends");
+        ends.appendChild(el("span", null, "0 偏空（三变量都不利）"));
+        ends.appendChild(el("span", null, "100 偏多（三变量齐有利）"));
+        sw.appendChild(ends);
+        gbox.appendChild(sw);
+      }
+
       if (gd.meaning) gbox.appendChild(rich("div", "meaning", gd.meaning));
       if (gd.what || gd.guide) {
         var gdet = el("details", "what");
