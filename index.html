@@ -179,6 +179,8 @@
   .badge.st-tailwind { color: var(--positive); border: 1px solid color-mix(in srgb, var(--positive) 45%, transparent); }
   .badge.st-headwind { color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent); }
   .badge.st-neutral { color: var(--text-3); border: 1px solid var(--border); }
+  .badge.st-red { color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent); background: color-mix(in srgb, var(--danger) 8%, transparent); }
+  .badge.st-yellow { color: var(--warn, #b8860b); border: 1px solid color-mix(in srgb, var(--warn, #b8860b) 45%, transparent); }
   .pf-card .nm { font-size: 12.5px; color: var(--text-3); display: flex; justify-content: space-between; gap: 8px; }
   .pf-card .big { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 3px; }
   .pf-card .sub2 { font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; margin-top: 3px; }
@@ -282,6 +284,11 @@
         <div class="sec-note" id="cn-note" hidden></div>
       </section>
 
+      <section id="gold-section" hidden>
+        <h2 class="section-title">黄金 · 定价三变量（实际利率 &gt; 美元 &gt; 结构盘）</h2>
+        <div class="pf-grid" id="gold"></div>
+      </section>
+
       <section id="comp-section" hidden>
         <h2 class="section-title">核心分项 · 0=极度恐惧 100=极度贪婪</h2>
         <p class="legend">情绪分数是<b>反向指标</b>：80 以上＝极度贪婪（历史上往往是风险区，别追高）；20 以下＝极度恐惧（历史上往往是机会区，分批买）。每张卡都有「现在说明什么」的解读，点开「这是什么？」看指标定义。</p>
@@ -358,7 +365,7 @@
 (function () {
   "use strict";
   var LEVEL_LABEL = { green: "绿灯 · 持有", yellow: "黄灯 · 警惕", red: "红灯 · 降风险" };
-  var ST_LABEL = { tailwind: "顺风", neutral: "中性", headwind: "逆风" };
+  var ST_LABEL = { tailwind: "顺风", neutral: "中性", headwind: "逆风", red: "应激", yellow: "关注" };
 
   function zoneClass(zone) {
     if (zone === "极度恐惧") return "z-extreme-fear";
@@ -530,6 +537,11 @@
       var it = cm[k];
       if (it) secCard(cnWrap, it.name, it.value != null ? it.value.toLocaleString("en-US") : "--", it.d1, it.d20, it.d60, null, it.date);
     });
+    if (cm.margin) {
+      secCard(cnWrap, "两融·融资余额", cm.margin.value + " 万亿", null, cm.margin.d20, null,
+        (cm.margin.netBuy1d != null ? "当日净买入 " + (cm.margin.netBuy1d >= 0 ? "+" : "") + cm.margin.netBuy1d + " 亿 · " : "") + cm.margin.what,
+        cm.margin.date);
+    }
     if (cm.lead) {
       var cnNote = document.getElementById("cn-note");
       cnNote.hidden = false;
@@ -537,6 +549,33 @@
       cnNote.appendChild(rich("span", null, "**科创50 vs SOX 60日相对强弱：" + (cm.lead.kc50VsSox60d >= 0 ? "+" : "") + cm.lead.kc50VsSox60d + "%**。" + cm.lead.note));
     }
     document.getElementById("cn-section").hidden = !cnWrap.children.length;
+
+    // ---- P2 黄金模块 ----
+    var gd = main.gold || {};
+    var gdWrap = document.getElementById("gold");
+    if (gd.price != null || gd.realRate10) {
+      var gbox = el("div", "card pf-card");
+      var gnm = el("div", "nm");
+      gnm.appendChild(el("span", null, "COMEX 黄金"));
+      gnm.appendChild(el("span", "badge st-" + (gd.status || "neutral"), ST_LABEL[gd.status] || "中性"));
+      gbox.appendChild(gnm);
+      gbox.appendChild(el("div", "big", gd.price != null ? "$" + gd.price.toLocaleString("en-US") : "--"));
+      var gsub = [];
+      if (gd.chg1d != null) gsub.push("日变动 " + (gd.chg1d >= 0 ? "+" : "") + gd.chg1d + "%");
+      if (gd.realRate10) gsub.push("10Y 实际利率 " + gd.realRate10.value + "%（20日 " + (gd.realRate10.chg20bp >= 0 ? "+" : "") + gd.realRate10.chg20bp + "bp）");
+      if (gd.dxyBroad) gsub.push("广义美元 " + gd.dxyBroad.value + "（20日 " + (gd.dxyBroad.chg20 >= 0 ? "+" : "") + gd.dxyBroad.chg20 + "%）");
+      gbox.appendChild(el("div", "sub2", gsub.join(" · ")));
+      if (gd.meaning) gbox.appendChild(rich("div", "meaning", gd.meaning));
+      if (gd.what || gd.guide) {
+        var gdet = el("details", "what");
+        gdet.appendChild(el("summary", null, "这是什么？怎么看？怎么用？"));
+        if (gd.what) gdet.appendChild(el("div", "what-body", gd.what));
+        if (gd.guide) gdet.appendChild(el("div", "what-body", gd.guide));
+        gbox.appendChild(gdet);
+      }
+      gdWrap.appendChild(gbox);
+    }
+    document.getElementById("gold-section").hidden = !gdWrap.children.length;
 
     var idxWrap = document.getElementById("indices");
     (main.indices || []).forEach(function (ix) {
@@ -674,6 +713,21 @@
         (cl.ma4 != null ? "4周均值 " + cl.ma4 + " 万" : "") +
         (cl.yoy4w != null ? " · 同比 " + (cl.yoy4w > 0 ? "+" : "") + cl.yoy4w + "%" : "") + " · " + cl.date,
         cl);
+    }
+    // ---- P2 货币市场压力 + IG 信用（中变量，比宏观快、比情绪慢） ----
+    if (main.moneyStress && main.moneyStress.spreadBp != null) {
+      var ms = main.moneyStress;
+      mcCard("货币市场压力 SOFR−EFFR",
+        (ms.spreadBp >= 0 ? "+" : "") + ms.spreadBp + " bp",
+        "SOFR " + ms.sofr + "% / EFFR " + ms.effr + "% · " + ms.date +
+        (ms.percentile1y != null ? " · 一年分位 " + Math.round(ms.percentile1y) + "%" : ""), ms);
+    }
+    if (main.creditIG && main.creditIG.value != null) {
+      var igc = main.creditIG;
+      mcCard("IG 投资级利差",
+        igc.value + "%",
+        (igc.chg30bp != null ? "30日 " + (igc.chg30bp >= 0 ? "+" : "") + igc.chg30bp + "bp · " : "") + igc.date +
+        (igc.percentile1y != null ? " · 一年分位 " + Math.round(igc.percentile1y) + "%" : ""), igc);
     }
     document.getElementById("macro-section").hidden = !mcWrap.children.length;
 
