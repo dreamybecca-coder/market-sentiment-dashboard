@@ -321,6 +321,10 @@ def build_artifact():
         ("walcl","WALCL", 320),
         ("tga",  "WTREGEN", 800),
         ("rrp",  "RRPONTSYD", 800),
+        ("sofr", "SOFR", 260),
+        ("effr", "EFFR", 260),
+        ("ig",   "BAMLC0A0CM", 1250),
+        ("dxy",  "DTWEXBGS", 320),
     ]
     for key, sid, n in fetches:
         try:
@@ -363,6 +367,51 @@ def build_artifact():
             ext[key] = fn(arg)
         except Exception as e:
             errors.append(f"{key}（已降级）: {str(e)[:60]}")
+
+    # ---------- P2 新增数据源：两融（东财数据中心）+ 黄金现货（东财外盘期货） ----------
+    def em_rzrq(days=30):
+        url = ("https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPTA_RZRQ_LSHJ"
+               f"&columns=DIM_DATE,RZYE,RZJME&sortColumns=DIM_DATE&sortTypes=-1&pageSize={days}&pageNumber=1"
+               "&source=WEB&client=WEB")
+        d = json.loads(curl(url, timeout=15, retries=2))
+        rows = [((r["DIM_DATE"] or "")[:10], float(r["RZYE"]) / 1e8, float(r["RZJME"]) / 1e8)
+                for r in ((d.get("result") or {}).get("data") or []) if r.get("RZYE")]
+        rows.reverse()  # 时间正序；(日期, 融资余额亿, 当日净买入亿)
+        if not rows:
+            raise RuntimeError("rzrq empty")
+        return rows
+
+    def em_gold():
+        url = "https://push2.eastmoney.com/api/qt/stock/get?secid=101.GC00Y&fields=f43,f60,f170"
+        d = json.loads(curl(url, timeout=12, retries=2)).get("data") or {}
+        if d.get("f43") in (None, "-"):
+            raise RuntimeError("gold empty")
+        return float(d["f43"]) / 10.0, (float(d["f170"]) / 100.0 if d.get("f170") not in (None, "-") else None)
+
+    def em_gold_hist(days=130):
+        end = datetime.date.today().strftime("%Y%m%d")
+        beg = (datetime.date.today() - datetime.timedelta(days=int(days * 1.6))).strftime("%Y%m%d")
+        url = ("https://push2his.eastmoney.com/api/qt/stock/kline/get?"
+               f"secid=101.GC00Y&fields1=f1,f2,f3&fields2=f51,f53&klt=101&fqt=1&beg={beg}&end={end}")
+        d = json.loads(curl(url, timeout=15, retries=2))
+        ks = ((d.get("data") or {}).get("klines")) or []
+        rows = [(k.split(",")[0], float(k.split(",")[1])) for k in ks]
+        if not rows:
+            raise RuntimeError("gold hist empty")
+        return rows
+
+    try:
+        ext["rzrq"] = em_rzrq()
+    except Exception as e:
+        errors.append(f"两融（已降级）: {str(e)[:60]}")
+    try:
+        ext["gold"] = em_gold()
+    except Exception as e:
+        errors.append(f"黄金（已降级）: {str(e)[:60]}")
+    try:
+        ext["gold_hist"] = em_gold_hist()
+    except Exception as e:
+        errors.append(f"黄金历史（已降级）: {str(e)[:60]}")
 
     # ---------- 组装分项 ----------
     components = []
@@ -686,6 +735,46 @@ def build_artifact():
             "guide": "完整逻辑：企业裁员先于官方失业率上升，所以初请是劳动力市场最早的裂缝。怎么用：① 不看单周（噪音大），看 4 周均值的同比；② 同比 >+10% 且持续＝裁员周期启动，领先企业盈利下滑 2–6 个月，对「软着陆」叙事要降置信度；③ 反过来，同比持续为负（像现在的 -10%）＝劳动力市场仍在改善，是牛市的底层支撑之一。局限：它是经济指标不是市场指标——数据好不代表股市马上涨，它的作用是校准你对「宏观背景」的基本假设。",
         }
 
+    # ---------- P2 货币市场压力（SOFR−EFFR 基差）：金融体系管道的爆裂预警 ----------
+    money_stress = {}
+    if "sofr" in data and "effr" in data:
+        s_map = dict(data["sofr"]); e_map = dict(data["effr"])
+        common = sorted(set(s_map) & set(e_map))
+        if len(common) > 20:
+            spreads = [(d, round((s_map[d] - e_map[d]) * 100, 1)) for d in common]  # 基点
+            cur_bp = spreads[-1][1]
+            vals = [v for _, v in spreads]
+            money_stress = {
+                "spreadBp": cur_bp, "date": spreads[-1][0],
+                "sofr": s_map[common[-1]], "effr": e_map[common[-1]],
+                "percentile1y": pct_rank(vals[-250:], cur_bp),
+                "status": "red" if cur_bp >= 25 else ("yellow" if cur_bp >= 10 else "neutral"),
+                "what": "SOFR（机构拿国债抵押借隔夜钱的价格）− EFFR（联邦基金有效利率）。正常贴着 0 波动；走阔＝抵押借钱市场在加价——钱紧了，是金融体系管道层面最早的压力信号。",
+                "meaning": (f"现在 {cur_bp:+.0f}bp。"
+                            + ("管道应激区——2019 年 9 月回购危机前就是这个读数先跳。货币市场的问题会在几天内传导到所有风险资产，视同信用红灯处理。" if cur_bp >= 25
+                               else "开始偏离零轴，货币市场边际趋紧，盯住它是否继续走阔。" if cur_bp >= 10
+                               else "贴着零轴，货币市场管道通畅，没有压力迹象。")),
+                "threshold": "≥10bp 关注 · ≥25bp 管道应激（2019-09 回购危机前兆区）",
+                "guide": "完整逻辑：风险传导的顺序是「货币市场 → 信用债 → 股票」。SOFR−EFFR 比 HY 利差更上游——2019 年 9 月回购危机时它一夜跳到 +100bp 以上，而股市几天后才反应过来。怎么用：平时不用看（贴着 0 是常态）；一旦 ≥10bp 说明银行间抵押融资成本在加价，可能是季末效应（看是否快速回落），也可能是真实紧缩；≥25bp 且持续两天以上＝管道事件，直接按红灯处理，不等其他指标确认。局限：季末/年末有机械性脉冲，单日冲高要等第二天确认。",
+            }
+
+    # ---------- P2 IG 投资级利差：信用层的另一半 ----------
+    credit_ig = {}
+    if "ig" in data:
+        ig_rows = data["ig"]; ig_vals = [v for _, v in ig_rows]
+        ig_cur = ig_vals[-1]; ig_chg30 = bp_change(ig_vals, 21)
+        credit_ig = {
+            "value": round(ig_cur, 2), "date": ig_rows[-1][0], "chg30bp": ig_chg30,
+            "percentile1y": pct_rank(ig_vals[-250:], ig_cur),
+            "status": "headwind" if (ig_chg30 is not None and ig_chg30 >= 40) else "neutral",
+            "what": "投资级（BBB 以上好公司）债券相对国债的利差。HY（垃圾债）看的是「怕不怕违约」，IG 看的是「优质企业融资贵不贵」——IG 走阔通常比 HY 更早、更平滑。",
+            "meaning": (f"现在 {ig_cur:.2f}%，30 日变动 {ig_chg30:+.0f}bp。"
+                        + ("优质企业的融资成本在快速抬升——信用收紧开始从垃圾债蔓延到好公司，这是比 HY 更值得警惕的升级信号。" if ig_chg30 is not None and ig_chg30 >= 40
+                           else "优质企业融资环境平稳，信用压力还局限在垃圾债层面，没有蔓延。")),
+            "threshold": "30日 +40bp＝信用收紧蔓延到优质企业",
+            "guide": "完整逻辑：信用危机的扩散路径通常是 HY 先崩、IG 后跟上；如果只有 HY 走阔而 IG 不动，说明压力是局部性的（如 AI 发债链）；IG 也开始快速走阔＝压力升级为系统性。和 HY 配对看：HY 是温度计，IG 是确认器。局限：IG 利差波动小，信号少但准。",
+        }
+
     # ---------- 估值自动化：multpl 免费源（SPX PE-TTM + Shiller CAPE） ----------
     def multpl(url, pattern):
         try:
@@ -781,6 +870,179 @@ def build_artifact():
         rel = round(cn_market["kc50"]["d60"] - sectors["sox"]["d60"], 1)
         cn_market["lead"] = {"kc50VsSox60d": rel,
                              "note": "科创50 与 SOX 的 60 日涨幅差。2026 年 A股半导体 7 月见顶，领先本轮美股 AI 调整约 3 个月——A股科技是全球 AI 链条的前沿哨兵。"}
+    # P2：两融·融资余额——A股杠杆资金的进退（东财 T+1）
+    if ext.get("rzrq"):
+        rz = ext["rzrq"]
+        bal = [r[1] for r in rz]
+        rz_d20 = pct_change(bal, 20)
+        cn_market["margin"] = {
+            "name": "两融·融资余额", "value": round(bal[-1] / 1e4, 2), "unit": "万亿",
+            "date": rz[-1][0], "d20": rz_d20,
+            "netBuy1d": round(rz[-1][2], 0),
+            "what": "全市场散户和游资借券商的钱买股票的余额。A股最诚实的情绪指标之一——这是加了杠杆的真金白银，上涨需要它进，崩塌时它被迫撤。",
+            "note": "20 日变动 >+5%＝杠杆资金跑步进场（情绪热）；<-5%＝被迫去杠杆（下跌有惯性，别急着接）。T+1 数据。",
+        }
+
+    # ---------- P2 黄金模块：因果链（驱动因 → 环境合成 → 动量确认） ----------
+    gold = {}
+    gold_px, gold_chg = (ext.get("gold") or (None, None))
+    gold_hist = ext.get("gold_hist") or []
+    df_vals = [v for _, v in data["dfii10"]] if data.get("dfii10") else []
+    dxy_vals = [v for _, v in data["dxy"]] if data.get("dxy") else []
+    if gold_px or df_vals:
+        rr_chg20 = bp_change(df_vals, 20) if len(df_vals) > 20 else None
+        dxy_chg20 = pct_change(dxy_vals, 20) if len(dxy_vals) > 20 else None
+        hist_vals = [v for _, v in gold_hist]
+        ma20 = round(sum(hist_vals[-20:]) / 20, 1) if len(hist_vals) >= 20 else None
+        px_now = gold_px or (hist_vals[-1] if hist_vals else None)
+        vs_ma20 = round((px_now / ma20 - 1) * 100, 1) if (ma20 and px_now) else None
+
+        # 驱动因打分：实际利率权重 70%（第一变量），美元 30%（2022 年后被削弱）
+        rr_s = (1 if rr_chg20 < 0 else 0) if rr_chg20 is not None else None
+        dxy_s = (1 if dxy_chg20 < -0.5 else (0 if dxy_chg20 > 0.5 else 0.5)) if dxy_chg20 is not None else None
+        env_score = None
+        if rr_s is not None and dxy_s is not None:
+            env_score = round(70 * rr_s + 30 * dxy_s)
+        confirmed = bool(vs_ma20 is not None and vs_ma20 > 0)
+        # 结论矩阵：环境（因）× 动量（果）
+        if env_score is None:
+            verdict, vstatus = "数据不足", "neutral"
+        elif env_score >= 65 and confirmed:
+            verdict, vstatus = "多头趋势确认", "tailwind"
+        elif env_score >= 65:
+            verdict, vstatus = "偏多环境·趋势未确认", "neutral"
+        elif env_score < 35 and not confirmed:
+            verdict, vstatus = "双杀确认·远离", "headwind"
+        elif env_score < 35:
+            verdict, vstatus = "环境偏空·反弹是逃命", "headwind"
+        else:
+            verdict, vstatus = "中性拉锯", "neutral"
+
+        gvars = []
+        if rr_chg20 is not None:
+            gvars.append({
+                "name": "① 实际利率 · 第一驱动（权重 70%）",
+                "value": f"{df_vals[-1]:.2f}%", "chg": f"20日 {rr_chg20:+.0f}bp",
+                "mech": ("利率下行 → 持有黄金的机会成本下降" if rr_chg20 < 0 else "利率上行 → 持有黄金的机会成本抬升"),
+                "impact": "推升金价" if rr_chg20 < 0 else "压制金价",
+                "dir": "fav" if rr_chg20 < 0 else "adv",
+                "note": "黄金不生息，实际利率就是「拿着它亏多少利息」。这是最强因果变量，方向看 20 日变动，别看绝对值。"})
+        if dxy_chg20 is not None:
+            gvars.append({
+                "name": "② 美元指数 · 第二驱动（权重 30%）",
+                "value": f"{dxy_vals[-1]:.1f}", "chg": f"20日 {dxy_chg20:+.1f}%",
+                "mech": ("美元走弱 → 非美买家变便宜 + 避险替代减弱" if dxy_chg20 < -0.5
+                         else "美元走强 → 计价压力 + 避险替代增强" if dxy_chg20 > 0.5
+                         else "美元走平 → 无显著计价压力"),
+                "impact": "推升金价" if dxy_chg20 < -0.5 else ("压制金价" if dxy_chg20 > 0.5 else "中性"),
+                "dir": "fav" if dxy_chg20 < -0.5 else ("adv" if dxy_chg20 > 0.5 else "mid"),
+                "note": "「美元涨金必跌」是 2022 年前的旧规则——央行购金打破了它。现在美元只是辅助变量，权重故意压低。"})
+        gvars.append({
+            "name": "③ 央行购金 · 结构底（不计分，定性）",
+            "value": "季度数据", "chg": "WGC 季报",
+            "mech": "央行持续买入 → 吸收实物供给 → 抬高长期底部",
+            "impact": "托底（不计分）", "dir": "mid",
+            "note": "本轮金价在高利率+强美元下仍创历史新高的真正原因。它不定方向，定「跌不深」。"})
+
+        gold = {
+            "price": round(gold_px, 1) if gold_px else None, "chg1d": gold_chg,
+            "history": [[d, v] for d, v in gold_hist[-120:]],
+            "ma20": ma20, "vsMa20": vs_ma20,
+            "realRate10": {"value": round(df_vals[-1], 2), "chg20bp": rr_chg20} if df_vals else None,
+            "dxyBroad": {"value": round(dxy_vals[-1], 1), "chg20": dxy_chg20} if dxy_vals else None,
+            "vars": gvars,
+            "envScore": env_score, "confirmed": confirmed,
+            "verdict": verdict, "status": vstatus,
+            "momentum": ({"value": f"{px_now:,.0f}",
+                          "chg": (f"均线上方 +{vs_ma20}%" if vs_ma20 >= 0 else f"均线下方 {vs_ma20}%"),
+                          "mech": "价格站上 20 日线 → 趋势资金进场" if confirmed else "价格压在 20 日线下 → 趋势资金观望",
+                          "impact": "确认" if confirmed else "未确认",
+                          "dir": "fav" if confirmed else "adv",
+                          "note": "动量是「果」不是「因」：它不预测方向，只确认环境评分有没有兑现成趋势。"} if vs_ma20 is not None else None),
+            "what": "黄金不生息，定价锚是「持有它的机会成本」= 实际利率（第一驱动，权重 70%）；美元是第二驱动（计价货币，权重 30%，2022 年后被央行购金削弱）；央行购金是结构底（不定方向、定「跌不深」）。价格动量是结果，只负责确认。",
+            "meaning": (f"环境评分 {env_score}/100（因：实际利率+美元），动量{'已确认' if confirmed else '未确认'}（果：价格 vs 20日线）→ {verdict}。"
+                        + {"多头趋势确认": "环境和趋势同向——顺趋势持仓的最舒服状态。",
+                           "偏多环境·趋势未确认": "驱动因已转好但价格还没站上趋势线——左侧观察区，别追；动量翻正（价格收复 20 日线）就是确认信号。",
+                           "双杀确认·远离": "环境和趋势同向向下——任何反弹都别当反转。",
+                           "环境偏空·反弹是逃命": "价格在均线上但驱动因逆风——这种背离通常以价格补跌收场。",
+                           "中性拉锯": "多空力量均衡，等实际利率给出方向。"}.get(verdict, "")),
+            "guide": "怎么读这张图：上行三行是「因」（谁在驱动金价），中间评分条是「因的合成」，最下一行是「果」（趋势是否确认）。① 预判拐点看「因」——实际利率 20 日方向拐头，领先金价；② 动手看「果」——评分 ≥65 且价格收复 20 日线才是右侧买点；③ 「因」与「果」背离时信「因」，但等「果」确认再加仓。",
+        }
+
+
+    # ---------- P2 信用链：管道（因）→ IG（传导）→ HY（末端定价）→ 股市（果） ----------
+    credit_chain = {}
+    if hy and money_stress and credit_ig:
+        sofr_bp = money_stress.get("spreadBp")
+        ig30 = credit_ig.get("chg30bp")
+        hy30 = hy.get("chg30bp")
+        sofr_s = (1 if sofr_bp < 10 else (0.5 if sofr_bp < 25 else 0)) if sofr_bp is not None else None
+        ig_s = (1 if ig30 < 15 else (0.5 if ig30 < 40 else 0)) if ig30 is not None else None
+        hy_s = (1 if hy30 < 15 else (0.5 if hy30 < 50 else 0)) if hy30 is not None else None
+        env = round(30 * sofr_s + 30 * ig_s + 40 * hy_s) if None not in (sofr_s, ig_s, hy_s) else None
+        if env is None:
+            cverdict, cstatus = "数据不足", "neutral"
+        elif env >= 80:
+            cverdict, cstatus = "信用环境平静", "tailwind"
+        elif env >= 60:
+            cverdict, cstatus = "局部压力：末端在抖、上游未坏", "neutral"
+        elif env >= 40:
+            cverdict, cstatus = "压力蔓延中", "yellow"
+        else:
+            cverdict, cstatus = "系统性信用事件", "red"
+        crows = []
+        if sofr_bp is not None:
+            crows.append({
+                "name": "① 货币市场管道 SOFR−EFFR · 最上游（权重 30%）",
+                "value": f"{sofr_bp:+.0f}bp", "chg": money_stress.get("date", ""),
+                "mech": ("贴零轴 → 机构抵押融资通畅" if sofr_bp < 10
+                         else "偏离零轴 → 管道开始加价、钱边际变紧" if sofr_bp < 25
+                         else "大幅跳升 → 管道应激（2019-09 回购危机前兆区）"),
+                "impact": "无压力" if sofr_bp < 10 else ("趋紧" if sofr_bp < 25 else "应激"),
+                "dir": "fav" if sofr_bp < 10 else ("mid" if sofr_bp < 25 else "adv"),
+                "note": "风险的物理源头。它不出事则已，一出事所有资产几天内连锁。季末有机械脉冲，需次日确认。"})
+        if ig30 is not None:
+            crows.append({
+                "name": "② IG 投资级利差 · 传导层（权重 30%）",
+                "value": f"{credit_ig['value']:.2f}%", "chg": f"30日 {ig30:+.0f}bp",
+                "mech": ("变动 <+15bp → 优质企业融资平稳，压力没传上来" if ig30 < 15
+                         else "+15~40bp → 好公司融资开始变贵，传导启动" if ig30 < 40
+                         else "≥+40bp → 压力蔓延到优质企业，升级为系统性"),
+                "impact": "未蔓延" if ig30 < 15 else ("蔓延中" if ig30 < 40 else "已蔓延"),
+                "dir": "fav" if ig30 < 15 else ("mid" if ig30 < 40 else "adv"),
+                "note": "信用危机的扩散判据：只有 HY 抖而 IG 不动＝局部事件（如 AI 发债链）；IG 跟上＝系统性。IG 是确认器。"})
+        if hy30 is not None:
+            crows.append({
+                "name": "③ HY 高收益债利差 · 末端定价（权重 40%）",
+                "value": f"{hy['value']:.2f}%", "chg": f"30日 {hy30:+.0f}bp",
+                "mech": ("变动 <+15bp → 违约风险定价平稳" if hy30 < 15
+                         else "+15~50bp → 市场在重新定价违约风险" if hy30 < 50
+                         else "≥+50bp → 降风险触发区（领先股市 2–4 周）"),
+                "impact": "平稳" if hy30 < 15 else ("重新定价中" if hy30 < 50 else "降风险警报"),
+                "dir": "fav" if hy30 < 15 else ("mid" if hy30 < 50 else "adv"),
+                "note": "垃圾债投资者是第一批要求风险补偿的人。它对风险偏好最敏感、动得最早——所以权重最高，但它只告诉你「疼」，不告诉你「病根」。"})
+        equity_row = None
+        if spx_d20 is not None:
+            transmitted = spx_d20 <= -5
+            equity_row = {
+                "name": "④ 股市确认 · SPX 20 日",
+                "value": f"{spx_d20:+.1f}%", "chg": "信用领先股市 2–4 周",
+                "mech": ("股市已大跌 → 信用压力兑现成价格" if transmitted
+                         else "信用在报警、股市尚未充分下跌 → 提前量还在"),
+                "impact": "已传导" if transmitted else "未传导",
+                "dir": "adv" if transmitted else "mid",
+                "note": "信用链的价值就在于这个「未传导」窗口——它比股市早 2–4 周。窗口内执行动作，等股市跌了你已经减完。"}
+        credit_chain = {
+            "envScore": env, "verdict": cverdict, "status": cstatus,
+            "rows": crows, "equity": equity_row,
+            "what": "信用不是单一指标，是一条传导链：货币市场管道（SOFR−EFFR，钱本身紧不紧）→ IG 优质企业利差（压力有没有蔓延到好公司）→ HY 垃圾债利差（违约风险的末端定价）→ 最后才轮到股市。每一层回答的问题不同：管道=「有没有事」，IG=「大不大」，HY=「疼不疼」，股市=「兑现没」。",
+            "meaning": (f"信用环境 {env}/100：{cverdict}。"
+                        + {"信用环境平静": "三层都平稳，信用维度没有需要动作的信号。",
+                           "局部压力：末端在抖、上游未坏": "HY 在重新定价（30日 +70bp），但管道通畅、IG 未蔓延——压力还锁定在局部（AI 发债链），按局部风险处理：不系统性减仓，但不加仓、盯 IG 是否跟上。",
+                           "压力蔓延中": "两层以上恶化——从局部事件升级为系统性风险的过程正在发生，减仓动作要提前到这一档，别等股市确认。",
+                           "系统性信用事件": "三层全坏——历史上对应 2008/2020 模式，现金为王。"}.get(cverdict, "")),
+            "guide": "怎么读：从上往下是传导方向，从下往上看是定价结果。背离比绝对值更重要——HY 抖而 IG/管道不动＝局部（现在就是这个状态）；IG 跟上＝系统性升级；管道跳升＝一切让路。和黄金链的区别：黄金是「定价锚」链（变量→估值），信用是「传导」链（上游堵→下游炸），所以信用的因在上游、果在股市，动量确认换成了「股市是否已跌」。",
+        }
 
     # ---------- 警报引擎 ----------
     alerts = []
@@ -826,6 +1088,23 @@ def build_artifact():
     if kc60 is not None and kc60 < -15:
         alerts.append({"key": "cn_ai_lead", "level": "yellow", "actionable": False,
                        "text": f"A股科创50 60日 **{kc60:+.1f}%**：A股科技 7 月已见顶，历史领先美股 AI 调整——全球 AI 链条的前沿警报"})
+
+    # P2：货币市场管道压力（最上游，视同信用红灯）
+    if money_stress.get("status") == "red":
+        alerts.append({"key": "funding_stress", "level": "red", "actionable": True,
+                       "text": f"SOFR−EFFR **{money_stress['spreadBp']:+.0f}bp**：货币市场管道应激——比信用利差更上游的警报，按红灯处理"})
+    elif money_stress.get("status") == "yellow":
+        alerts.append({"key": "funding_watch", "level": "yellow", "actionable": False,
+                       "text": f"SOFR−EFFR {money_stress['spreadBp']:+.0f}bp：货币市场边际趋紧，盯是否继续走阔"})
+    # P2：IG 利差走阔——信用压力蔓延到优质企业
+    if credit_ig.get("status") == "headwind":
+        alerts.append({"key": "ig_widen", "level": "yellow", "actionable": False,
+                       "text": f"IG 利差 30日 **{credit_ig['chg30bp']:+.0f}bp**：信用收紧蔓延到优质企业，压力从局部升级为系统性"})
+    # P2：两融去杠杆——A股杠杆资金被迫撤离
+    mg_d20 = (cn_market.get("margin") or {}).get("d20")
+    if mg_d20 is not None and mg_d20 <= -5:
+        alerts.append({"key": "margin_delev", "level": "yellow", "actionable": False,
+                       "text": f"两融余额 20日 **{mg_d20:+.1f}%**：杠杆资金被迫撤离，A股下跌有惯性，别急着接"})
 
     # 无动作标签的红灯降级为黄灯（对照稿硬规则）
     for a in alerts:
@@ -971,6 +1250,10 @@ def build_artifact():
         "raceFrame": race_frame,
         "sectors": sectors,
         "cnMarket": cn_market,
+        "moneyStress": money_stress,
+        "creditIG": credit_ig,
+        "creditChain": credit_chain,
+        "gold": gold,
         "rates": {"us10y": {"value": data["us10y"][-1][1], "date": data["us10y"][-1][0]} if data.get("us10y") else None},
         "errors": errors,
     }
