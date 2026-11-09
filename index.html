@@ -207,6 +207,30 @@
   .chain-label { font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--text-3); margin: 12px 0 2px; display: flex; align-items: center; gap: 8px; }
   .chain-label::after { content: ""; flex: 1; border-top: 1px solid var(--border); }
   .gold-concl { margin-top: 12px; padding: 9px 12px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 8%, transparent); font-size: 13px; line-height: 1.6; }
+  /* ---- 预测成绩单 ---- */
+  .fc-stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
+  .fc-stat { padding: 8px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 12.5px; color: var(--text-2); }
+  .fc-stat b { font-size: 18px; color: var(--text-1); margin-right: 4px; font-variant-numeric: tabular-nums; }
+  .fc-list { display: grid; gap: 14px; }
+  .fc-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .fc-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .fc-head .fc-id { font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .fc-head .fc-call { font-size: 15px; font-weight: 700; }
+  .fc-meta { font-size: 12.5px; color: var(--text-3); margin-top: 4px; }
+  .fc-probs { display: flex; gap: 12px; margin-top: 8px; font-size: 12.5px; color: var(--text-2); flex-wrap: wrap; }
+  .fc-probs b { font-variant-numeric: tabular-nums; }
+  .fc-sigs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .fc-sig { font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--text-3) 12%, transparent); color: var(--text-2); }
+  .fc-fals { font-size: 12.5px; color: var(--text-2); margin-top: 8px; }
+  .fc-fals b { color: var(--text-1); }
+  .fc-result { margin-top: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13px; line-height: 1.6; background: color-mix(in srgb, var(--text-3) 8%, transparent); }
+  .fc-result.win { background: color-mix(in srgb, var(--positive) 10%, transparent); }
+  .fc-result.lose { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+  .fc-result.half { background: color-mix(in srgb, var(--warn, #b8860b) 10%, transparent); }
+  .badge.fc-open { color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); }
+  .badge.fc-win { color: var(--positive); border: 1px solid color-mix(in srgb, var(--positive) 45%, transparent); }
+  .badge.fc-lose { color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent); }
+  .badge.fc-half { color: var(--warn, #b8860b); border: 1px solid color-mix(in srgb, var(--warn, #b8860b) 45%, transparent); }
   .score-wrap { margin-top: 14px; }
   .score-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
   .score-num { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -300,6 +324,13 @@
           <div class="quad-fed" id="quad-fed" hidden></div>
           <div class="quad-race" id="quad-race" hidden></div>
         </div>
+      </section>
+
+      <section id="fc-section" hidden>
+        <h2 class="section-title">预测成绩单 · 每周一条正式预测，到期自动结算<span class="asof" id="fc-updated"></span></h2>
+        <p class="legend">每条预测都带<b>结算规则</b>和<b>证伪条件</b>，到期用真实数据判定对错，人说了不算。信号胜率按归因标签累计——攒的是「每个信号该信几分」。每周日复盘归因，每月初环比回溯，权重调整需人工确认。</p>
+        <div class="fc-stats" id="fc-stats"></div>
+        <div class="fc-list" id="fc-list"></div>
       </section>
 
       <section id="credit-section" hidden>
@@ -1079,13 +1110,95 @@
     }
   }
 
+  // ---- 预测成绩单 ----
+  function renderForecasts(d) {
+    var sec = document.getElementById("fc-section");
+    if (!d || !d.forecasts || !d.forecasts.length) return;
+    sec.hidden = false;
+    if (d.updatedAt) document.getElementById("fc-updated").textContent = " · 账本更新 " + d.updatedAt.slice(0, 10);
+    var st = d.stats || {};
+    var statsBox = document.getElementById("fc-stats");
+    statsBox.innerHTML = "";
+    function statChip(num, label) {
+      var s = el("span", "fc-stat");
+      s.appendChild(el("b", null, String(num)));
+      s.appendChild(document.createTextNode(label));
+      statsBox.appendChild(s);
+    }
+    statChip(st.openCount || 0, " 条进行中");
+    statChip(st.total || 0, " 条已结算");
+    if (st.winRate != null) statChip(st.winRate + "%", " 累计胜率");
+    var list = document.getElementById("fc-list");
+    list.innerHTML = "";
+    d.forecasts.forEach(function (f) {
+      var card = el("div", "fc-card");
+      var head = el("div", "fc-head");
+      var settled = f.status === "settled" && f.settled;
+      var badgeClass = settled
+        ? (f.settled.verdict === "对" ? "fc-win" : (f.settled.verdict === "错" ? "fc-lose" : "fc-half"))
+        : "fc-open";
+      var badgeText = settled ? ("已结算 · " + f.settled.verdict) : "进行中";
+      head.appendChild(el("span", "badge " + badgeClass, badgeText));
+      head.appendChild(el("span", "fc-call", (f.asset === "GOLD" ? "黄金" : "美股") + " · " + f.call));
+      head.appendChild(el("span", "fc-id", f.id + " · 建于 " + f.created + " · 结算日 " + f.settleDate));
+      card.appendChild(head);
+      card.appendChild(el("div", "fc-meta",
+        "区间判定：" + f.range[0] + "% ~ +" + f.range[1] + "%（" + (f.horizon || "") + "）· 入场价 " + f.entryPrice + "（" + (f.entryPriceDate || "") + "）· 操作指向：" + (f.implication || "—")));
+      if (f.probs) {
+        var probs = el("div", "fc-probs");
+        probs.appendChild(el("span", null, "情景概率 →"));
+        if (f.probs.base != null) probs.appendChild(el("span", null, "基准 "));
+        if (f.probs.base != null) probs.lastChild.appendChild(el("b", null, f.probs.base + "%"));
+        if (f.probs.bear != null) { var b1 = el("span", null, "恶化 "); b1.appendChild(el("b", null, f.probs.bear + "%")); probs.appendChild(b1); }
+        if (f.probs.bull != null) { var b2 = el("span", null, "修复 "); b2.appendChild(el("b", null, f.probs.bull + "%")); probs.appendChild(b2); }
+        card.appendChild(probs);
+      }
+      if (f.signals && f.signals.length) {
+        var sigs = el("div", "fc-sigs");
+        f.signals.forEach(function (s) { sigs.appendChild(el("span", "fc-sig", s)); });
+        card.appendChild(sigs);
+      }
+      if (f.falsifiers && f.falsifiers.length) {
+        var fals = el("div", "fc-fals");
+        fals.appendChild(el("b", null, "证伪条件（触发即判错）："));
+        fals.appendChild(document.createTextNode(f.falsifiers.join(" · ")));
+        card.appendChild(fals);
+      }
+      if (settled) {
+        var res = el("div", "fc-result " + (f.settled.verdict === "对" ? "win" : (f.settled.verdict === "错" ? "lose" : "half")));
+        res.textContent = "结算（" + f.settled.settleDateActual + "）：实际收益 " + (f.settled.actualReturn >= 0 ? "+" : "") + f.settled.actualReturn + "%，判定「" + f.settled.verdict + "」。"
+          + (f.settled.review ? "归因：" + f.settled.review : "周日晚复盘时补充归因。");
+        card.appendChild(res);
+      }
+      list.appendChild(card);
+    });
+    // 信号级胜率
+    var bs = st.bySignal || {};
+    var keys = Object.keys(bs);
+    if (keys.length) {
+      var box = el("div", "fc-card");
+      box.appendChild(el("div", "fc-head")).appendChild(el("span", "fc-call", "信号胜率 · 每个信号该信几分"));
+      var tbl = el("div", "fc-probs");
+      keys.sort(function (a, b) { return bs[b].n - bs[a].n; }).forEach(function (k) {
+        var s = el("span", null, k + " ");
+        s.appendChild(el("b", null, bs[k].winRate + "%"));
+        s.appendChild(document.createTextNode("（" + bs[k].n + " 次）"));
+        tbl.appendChild(s);
+      });
+      box.appendChild(tbl);
+      list.appendChild(box);
+    }
+  }
+
   Promise.allSettled([
     fetch("data/sentiment.json", { cache: "no-store" }).then(function (r) { return r.json(); }),
-    fetch("data/brief.json", { cache: "no-store" }).then(function (r) { return r.json(); })
+    fetch("data/brief.json", { cache: "no-store" }).then(function (r) { return r.json(); }),
+    fetch("data/forecasts.json", { cache: "no-store" }).then(function (r) { return r.json(); })
   ]).then(function (results) {
     document.getElementById("loading").hidden = true;
     if (results[0].status === "fulfilled") renderSentiment(results[0].value);
     if (results[1].status === "fulfilled") renderBriefAll(results[1].value);
+    if (results[2].status === "fulfilled") renderForecasts(results[2].value);
     if (results[0].status !== "fulfilled" && results[1].status !== "fulfilled") {
       document.getElementById("loading").hidden = false;
       document.getElementById("loading").textContent = "数据加载失败，请稍后再试。";
