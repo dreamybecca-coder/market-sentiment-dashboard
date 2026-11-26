@@ -1,5 +1,5 @@
 {
- "asOf": "2026-11-26 06:14",
+ "asOf": "2026-11-26 15:45",
  "status": {
   "level": "red",
   "headline": "信用利差 **3.72%**（30日 **+56bp**）：降风险触发区",
@@ -11,16 +11,16 @@
     "text": "信用利差 **3.72%**（30日 **+56bp**）：降风险触发区",
     "context": [
      {
-      "title": "Minutes of the Board's discount rat…",
-      "source": "美联储公告",
-      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261124a.htm",
-      "tag": "📋 官方公告"
+      "title": "Brown Advisory National Municipal B…",
+      "source": "Seeking Alpha",
+      "url": "https://seekingalpha.com/article/4972083-brown-advisorynational-municipal-bond-q3-2026-commentary?source=feed_all_articles",
+      "tag": "🔴 快讯"
      },
      {
-      "title": "GPT-6 models demonstrate intrinsic…",
-      "source": "OpenAI Blog",
-      "url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities",
-      "tag": "📋 官方公告"
+      "title": "Our Rate-Hike Economy: Sizzling Pri…",
+      "source": "Wolf Street",
+      "url": "https://wolfstreet.com/2026/11/25/our-rate-hike-economy-sizzling-private-sector-economic-growth-hot-inflation/",
+      "tag": "🟡 深度分析"
      }
     ]
    },
@@ -34,13 +34,13 @@
     "key": "cn_ai_lead",
     "level": "yellow",
     "actionable": false,
-    "text": "A股科创50 60日 **-26.1%**：A股科技 7 月已见顶，历史领先美股 AI 调整——全球 AI 链条的前沿警报"
+    "text": "A股科创50 60日 **-28.3%**：A股科技 7 月已见顶，历史领先美股 AI 调整——全球 AI 链条的前沿警报"
    },
    {
     "key": "margin_delev",
     "level": "yellow",
     "actionable": false,
-    "text": "两融余额 20日 **-10.0%**：杠杆资金被迫撤离，A股下跌有惯性，别急着接"
+    "text": "两融余额 20日 **-11.0%**：杠杆资金被迫撤离，A股下跌有惯性，别急着接"
    }
   ],
   "alertCount": 4
@@ -194,9 +194,9 @@
   {
    "symbol": "NDX",
    "name": "纳指综合（NDX 降级）",
-   "price": 23733.54,
-   "changePct": -1.48,
-   "date": "2026-11-24"
+   "price": 23585.8,
+   "changePct": -0.62,
+   "date": "2026-11-25"
   },
   {
    "symbol": "VIX",
@@ -367,18 +367,18 @@
  "sectors": {
   "sox": {
    "name": "费城半导体 SOX",
-   "value": 8833.0,
-   "date": "2026-11-24",
-   "d20": -23.08,
-   "d60": -23.43,
+   "value": 8775.0,
+   "date": "2026-11-25",
+   "d20": -24.9,
+   "d60": -22.27,
    "what": "全球半导体景气的一线温度计——你的 AI/科技敞口的真实位置在这里，不在 SPX。"
   },
   "rut": {
    "name": "罗素2000 小盘股",
-   "value": 2685.0,
-   "date": "2026-11-24",
-   "d20": -4.75,
-   "d60": -9.18,
+   "value": 2704.0,
+   "date": "2026-11-25",
+   "d20": -4.47,
+   "d60": -7.4,
    "what": "对利率最敏感的指数。它比 SPX 先跌，是利率冲击是否传导到实体经济的验证器。"
   },
   "ndxrel": {
@@ -392,47 +392,47 @@
  "cnMarket": {
   "kc50": {
    "name": "科创50",
-   "value": 1186.14,
-   "date": "2026-11-25",
-   "d1": -5.12,
-   "d20": -7.54,
-   "d60": -26.08
+   "value": 1169.99,
+   "date": "2026-11-26",
+   "d1": -1.36,
+   "d20": -4.73,
+   "d60": -28.31
   },
   "cyb": {
    "name": "创业板指",
-   "value": 2183.58,
-   "date": "2026-11-25",
-   "d1": -4.19,
-   "d20": -17.12,
-   "d60": -35.73
+   "value": 2189.82,
+   "date": "2026-11-26",
+   "d1": 0.29,
+   "d20": -13.02,
+   "d60": -35.87
   },
   "sh": {
    "name": "上证指数",
-   "value": 3476.47,
-   "date": "2026-11-25",
-   "d1": -2.03,
-   "d20": -5.57,
-   "d60": -10.62
+   "value": 3476.88,
+   "date": "2026-11-26",
+   "d1": 0.01,
+   "d20": -4.78,
+   "d60": -11.13
   },
   "cnsemi": {
    "name": "半导体板块",
-   "value": 1827.66,
-   "date": "2026-11-25",
-   "d1": -7.97,
-   "d20": -17.97,
-   "d60": -31.99
+   "value": 1814.52,
+   "date": "2026-11-26",
+   "d1": -0.72,
+   "d20": -13.78,
+   "d60": -32.37
   },
   "lead": {
-   "kc50VsSox60d": -2.6,
+   "kc50VsSox60d": -6.0,
    "note": "科创50 与 SOX 的 60 日涨幅差。2026 年 A股半导体 7 月见顶，领先本轮美股 AI 调整约 3 个月——A股科技是全球 AI 链条的前沿哨兵。"
   },
   "margin": {
    "name": "两融·融资余额",
-   "value": 2.14,
+   "value": 2.12,
    "unit": "万亿",
-   "date": "2026-11-24",
-   "d20": -10.03,
-   "netBuy1d": 3.0,
+   "date": "2026-11-25",
+   "d20": -10.98,
+   "netBuy1d": -208.0,
    "what": "全市场散户和游资借券商的钱买股票的余额。A股最诚实的情绪指标之一——这是加了杠杆的真金白银，上涨需要它进，崩塌时它被迫撤。",
    "note": "20 日变动 >+5%＝杠杆资金跑步进场（情绪热）；<-5%＝被迫去杠杆（下跌有惯性，别急着接）。T+1 数据。"
   }
@@ -507,13 +507,9 @@
   "guide": "怎么读：从上往下是传导方向，从下往上看是定价结果。背离比绝对值更重要——HY 抖而 IG/管道不动＝局部（现在就是这个状态）；IG 跟上＝系统性升级；管道跳升＝一切让路。和黄金链的区别：黄金是「定价锚」链（变量→估值），信用是「传导」链（上游堵→下游炸），所以信用的因在上游、果在股市，动量确认换成了「股市是否已跌」。"
  },
  "gold": {
-  "price": 3588.4,
-  "chg1d": 0.74,
+  "price": 3600.7,
+  "chg1d": 1.01,
   "history": [
-   [
-    "2026-06-11",
-    4233.8
-   ],
    [
     "2026-06-12",
     4239.9
@@ -989,10 +985,14 @@
    [
     "2026-11-25",
     3588.4
+   ],
+   [
+    "2026-11-26",
+    3600.7
    ]
   ],
-  "ma20": 3870.1,
-  "vsMa20": -7.3,
+  "ma20": 3848.5,
+  "vsMa20": -6.4,
   "realRate10": {
    "value": 2.79,
    "chg20bp": 13.0
@@ -1035,8 +1035,8 @@
   "verdict": "双杀确认·远离",
   "status": "headwind",
   "momentum": {
-   "value": "3,588",
-   "chg": "均线下方 -7.3%",
+   "value": "3,601",
+   "chg": "均线下方 -6.4%",
    "mech": "价格压在 20 日线下 → 趋势资金观望",
    "impact": "未确认",
    "dir": "adv",
